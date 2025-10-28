@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-user
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-user
+  template:
+    metadata:
+      labels:
+        app: service-user
+    spec:
+      containers:
+      - name: service-user
+        image: alfr3d/service_user:latest
+        env:
+        - name: DATABASE_URL
+          value: "mysql"
+        - name: DATABASE_NAME
+          value: "alfr3d_db"
+        - name: DATABASE_USER
+          value: "user"
+        - name: DATABASE_PSWD
+          value: "password"
+        - name: KAFKA_URL
+          value: "kafka:9092"

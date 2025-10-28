@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+	 <table class="table table-hover">
+		<tr valign="top">
+			<td><img src="{{ user.avatar(128) }}"></td>
+			<td>
+				<h1>User: {{ user.username }}</h1>
+				{% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
+				{% if user.last_online %}<p>Last seen on: {{ user.last_online }}</p>{% endif %}
+				{% if user == current_user %}
+				<p><a href="{{ url_for('edit_profile') }}">Edit your profile</a></p>
+				{% endif %}
+				<p>
+					User ID: {{ user.id }} <br>
+					User email: {{ user.email }} <br>
+					User State: {{ user.state.state }} <br>
+					User Type: {{ user.user_type_id.type }} <br>
+				</p>
+			</td>
+		</tr>
+	</table>
+	<hr>
+	{% for post in posts %}
+		{% include '_post.html' %}
+	{% endfor %}
+	<hr>
+	<h3>my devices:</h3>
+	<table>
+		<tr>
+			<th>Name</th>
+			<th>IP</th>
+			<th>MAC</th>
+			<th>State</th>
+			<th>Type</th>
+			<th>User</th>
+			<th></th>
+		</tr>
+		{% for device in devices %}
+		<tr>
+			<td>{{ device.name }}</td>
+			<td>{{ device.IP }}</td>
+			<td>{{ device.MAC }}</td>
+			<td>{{ device.state.state }}</td>
+			<td>{{ device.device_type.type }}</td>
+			<td>{{ device.user.username }}</td>
+			<td><a href="{{ url_for('edit_device', mac=device.MAC) }}">Edit</a></td>
+		</tr>
+		{% endfor %}
+	</table>
+{% endblock %}

@@ -1,0 +1,10 @@
+Flask
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-Login
+Flask-Bootstrap
+PyJWT
+Werkzeug
+pytest
+hypothesis
+requests

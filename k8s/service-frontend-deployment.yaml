@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-frontend
+  template:
+    metadata:
+      labels:
+        app: service-frontend
+    spec:
+      containers:
+      - name: service-frontend
+        image: alfr3d/service_frontend:latest
+        env:
+        - name: DATABASE_URL
+          value: "mysql://user:password@mysql/alfr3d_db"
+        - name: SECRET_KEY
+          value: "your-secret-key"
+        ports:
+        - containerPort: 8000

@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: alfr3d-ingress
+spec:
+  rules:
+  - host: alfr3d.local  # Change to your domain
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: service-frontend
+            port:
+              number: 8000

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+	<h1>Hi, {{ current_user.username }}!</h1>
+	{% for post in posts %}
+		<div><p>{{ post.author.username }} says: <b>{{ post.status }}</b></p></div>
+	{% endfor %}
+	<hr>
+	<h3>Devices:</h3>
+	<table>
+		<tr>
+			<th>Name</th>
+			<th>IP</th>
+			<th>MAC</th>
+			<th>State</th>
+			<th>Type</th>
+			<th>User</th>
+			<th></th>
+		</tr>
+		{% for device in devices %}
+		<tr>
+			<td>{{ device.name }}</td>
+			<td>{{ device.IP }}</td>
+			<td>{{ device.MAC }}</td>
+			<td>{{ device.state.state }}</td>
+			<td>{{ device.device_type.type }}</td>
+			<td>{{ device.user.username }}</td>
+			<td><a href="{{ url_for('edit_device', mac=device.MAC) }}">Edit</a></td>
+		</tr>
+		{% endfor %}
+	</table>
+	<h3>Lights</h3>
+	<table>
+		{% for device in devices %}
+		<tr>
+			{% if device.device_type.type == "HW_lights" %}
+				<td>{{ device.name }}</td>
+				{% if device.state.state == "offline" %}
+					<td><input type="submit" name="{{ device.device_type.type }};{{ device.name }};ON" value="ON" disabled></td>
+					<td><input type="submit" name="{{ device.device_type.type }};{{ device.name }};OFF" value="OFF" disabled></td>
+				{% else %}
+					<form method="post">
+						<td><input type="submit" name="{{ device.device_type.type }};{{ device.name }};ON" value="ON"></td>
+						<td><input type="submit" name="{{ device.device_type.type }};{{ device.name }};OFF" value="OFF"></td>
+					</form>
+				{% endif %}
+			{% endif %}
+		</tr>
+		{% endfor %}
+	</table>
+	<h3>Switches</h3>
+	<table>
+		{% for device in devices %}
+		<tr>
+			{% if device.device_type.type == "HW_switch" %}
+				<td>{{ device.name }}</td>
+				{% if device.state.state == "offline" %}
+					<td><input type="submit" name="{{ device.device_type.type }};{{ device.name }};ON" value="ON" disabled></td>
+					<td><input type="submit" name="{{ device.device_type.type }};{{ device.name }};OFF" value="OFF" disabled></td>
+				{% else %}
+					<form method="post">
+						<td><input type="submit" name="{{ device.device_type.type }};{{ device.name }};ON" value="ON"></td>
+						<td><input type="submit" name="{{ device.device_type.type }};{{ device.name }};OFF" value="OFF"></td>
+					</form>
+				{% endif %}
+			{% endif %}
+		</tr>
+		{% endfor %}
+	</table>
+	<h3>Location</h3>
+	<div>
+		City: {{ environment.city }} <br>
+		Country: {{ environment.country }} <br>
+		Latitude: {{ environment.latitude }} <br>
+		Longitude: {{ environment.longitude }} <br>
+	</div>
+	<h3>Weather</h3>
+	<div>
+		Today's weather: {{ environment.description }} <br>
+		Today's High: {{ environment.high }} <br>
+		Today's Low: {{ environment.low }} <br>
+		Today's Sunrise: {{ environment.sunrise }} <br>
+		Today's Sunset: {{ environment.sunset }} <br>
+	</div>
+	<table>
+		<tr>
+		</tr>
+	</table>
+
+{% endblock %}

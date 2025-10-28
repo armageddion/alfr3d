@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: ${ZOOKEEPER_CLIENT_PORT}
+      ZOOKEEPER_TICK_TIME: ${ZOOKEEPER_TICK_TIME}
+    ports:
+      - "${ZOOKEEPER_CLIENT_PORT}:${ZOOKEEPER_CLIENT_PORT}"
+
+   kafka:
+     image: confluentinc/cp-kafka:7.4.0
+     depends_on:
+       - zookeeper
+     environment:
+       KAFKA_BROKER_ID: ${KAFKA_BROKER_ID}
+       KAFKA_ZOOKEEPER_CONNECT: ${KAFKA_ZOOKEEPER_CONNECT}
+       KAFKA_ADVERTISED_LISTENERS: ${KAFKA_ADVERTISED_LISTENERS}
+       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
+       KAFKA_CREATE_TOPICS: "speak:1:1,environment:1:1,device:1:1,user:1:1,google:1:1"
+     ports:
+       - "9092:9092"
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  service_user:
+    build: ./services/service_user
+    depends_on:
+      - kafka
+      - mysql
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PSWD=${DATABASE_PSWD}
+      - KAFKA_URL=${KAFKA_URL}
+
+  service_device:
+    build: ./services/service_device
+    depends_on:
+      - kafka
+      - mysql
+    network_mode: host  # To allow arp-scan on host network
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PSWD=${DATABASE_PSWD}
+      - KAFKA_URL=${KAFKA_URL}
+
+  service_environment:
+    build: ./services/service_environment
+    depends_on:
+      - kafka
+      - mysql
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_NAME=${DATABASE_NAME}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PSWD=${DATABASE_PSWD}
+      - KAFKA_URL=${KAFKA_URL}
+
+  service_frontend:
+    build: ./services/service_frontend
+    depends_on:
+      - mysql
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=mysql://${DATABASE_USER}:${DATABASE_PSWD}@${DATABASE_URL}/${DATABASE_NAME}
+      - SECRET_KEY=${SECRET_KEY}
+
+volumes:
+  mysql_data:
