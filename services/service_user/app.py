@@ -66,8 +66,7 @@ class User:
 			cursor.execute("SELECT * from user_types WHERE type = %s", ("guest",))
 			usrtype = cursor.fetchone()[0]
 			cursor.execute("SELECT * from environment WHERE name = %s", (socket.gethostname(),))
-			data = cursor.fetchone()
-			envid = cursor.fetchone()[0]
+			envid = cursor.fetchone()[0]			
 			cursor.execute("INSERT INTO user(username, last_online, state, type, environment_id) VALUES (%s, %s, %s, %s, %s)", (self.name, self.last_online, usrstate, usrtype, envid))
 			db.commit()
 		except Exception as  e:

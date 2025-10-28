@@ -5,6 +5,9 @@ Flask-Login
 Flask-Bootstrap
 PyJWT
 Werkzeug
+pymysql
 pytest
 hypothesis
 requests
+flake8
+black

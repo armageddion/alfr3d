@@ -49,6 +49,21 @@ pytest
 - **Route Tests**: HTTP endpoints for login, registration, etc.
 - **Fuzz Tests**: Random input generation to ensure crash-resistance.
 
+## Linting
+
+Run linting across all services:
+
+```bash
+./lint.sh
+```
+
+This checks code style with flake8 and formatting with black. Fix issues with:
+
+```bash
+black services/service_frontend/app/ services/service_frontend/tests/
+# Repeat for other services
+```
+
 ## Development
 
 Modify Python services in `services/` directories. Key improvements:
@@ -71,13 +86,13 @@ The project includes Kubernetes manifests in the `k8s/` directory for container 
 ### Deploy to Kubernetes
 
 1. Build and push Docker images to a registry (e.g., Docker Hub):
-   ```
-   docker build -t alfr3d/service_user:latest services/service_user
-   docker build -t alfr3d/service_device:latest services/service_device
-   docker build -t alfr3d/service_environment:latest services/service_environment
-   docker build -t alfr3d/service_frontend:latest services/service_frontend
-   # Push all images
-   ```
+    ```
+    docker build -t alfr3d/service-user:latest services/service_user
+    docker build -t alfr3d/service-device:latest services/service_device
+    docker build -t alfr3d/service-environment:latest services/service_environment
+    docker build -t alfr3d/service-frontend:latest services/service_frontend
+    # Push all images
+    ```
 
 2. Apply the manifests:
    ```

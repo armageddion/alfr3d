@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: service-user
-        image: alfr3d/service_user:latest
+        image: alfr3d/service-user:latest
         env:
         - name: DATABASE_URL
           value: "mysql"

@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: service-frontend
-        image: alfr3d/service_frontend:latest
+        image: alfr3d/service-frontend:latest
         env:
         - name: DATABASE_URL
           value: "mysql://user:password@mysql/alfr3d_db"
