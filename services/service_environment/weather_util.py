@@ -29,10 +29,11 @@ DATABASE_URL 	= os.environ['DATABASE_URL']
 DATABASE_NAME 	= os.environ['DATABASE_NAME']
 DATABASE_USER 	= os.environ['DATABASE_USER']
 DATABASE_PSWD 	= os.environ['DATABASE_PSWD']
-KAFKA_URL 		= os.environ['KAFKA_URL']
+KAFKA_URL 		= os.environ['KAFKA_BOOTSTRAP_SERVERS']
 
 producer = None
 try:
+	print("Connecting to Kafka at: "+KAFKA_URL)
 	producer = KafkaProducer(bootstrap_servers=[KAFKA_URL])
 except Exception as e:
 	logger.error("Failed to connect to Kafka")

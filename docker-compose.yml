@@ -41,7 +41,7 @@ services:
       - DATABASE_NAME=${DATABASE_NAME}
       - DATABASE_USER=${DATABASE_USER}
       - DATABASE_PSWD=${DATABASE_PSWD}
-      - KAFKA_URL=${KAFKA_URL}
+      - KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS}
 
   service-device:
     build: ./services/service_device
@@ -54,7 +54,7 @@ services:
       - DATABASE_NAME=${DATABASE_NAME}
       - DATABASE_USER=${DATABASE_USER}
       - DATABASE_PSWD=${DATABASE_PSWD}
-      - KAFKA_URL=${KAFKA_URL}
+      - KAFKA_BOOTSTRAP_SERVERS=localhost:9092
 
   service-environment:
     build: ./services/service_environment
@@ -66,7 +66,7 @@ services:
       - DATABASE_NAME=${DATABASE_NAME}
       - DATABASE_USER=${DATABASE_USER}
       - DATABASE_PSWD=${DATABASE_PSWD}
-      - KAFKA_URL=${KAFKA_URL}
+      - KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS}
 
   service-frontend:
     build: ./services/service_frontend
@@ -75,7 +75,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=mysql://${DATABASE_USER}:${DATABASE_PSWD}@${DATABASE_URL}/${DATABASE_NAME}
+      - DATABASE_URL=mysql+pymysql://${DATABASE_USER}:${DATABASE_PSWD}@${DATABASE_URL}/${DATABASE_NAME}
       - SECRET_KEY=${SECRET_KEY}
 
 volumes:

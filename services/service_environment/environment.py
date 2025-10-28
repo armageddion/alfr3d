@@ -29,14 +29,17 @@ DATABASE_URL 	= os.environ['DATABASE_URL']
 DATABASE_NAME 	= os.environ['DATABASE_NAME']
 DATABASE_USER 	= os.environ['DATABASE_USER']
 DATABASE_PSWD 	= os.environ['DATABASE_PSWD']
-KAFKA_URL 		= os.environ['KAFKA_URL']
+KAFKA_URL 		= os.environ['KAFKA_BOOTSTRAP_SERVERS']
 
 producer = None
-try:
-	producer = KafkaProducer(bootstrap_servers=[KAFKA_URL])
-except Exception as e:
-	logger.error("Failed to connect to Kafka")
-	sys.exit()
+while producer is None:
+	try:
+		print("Connecting to Kafka at: "+KAFKA_URL)
+		producer = KafkaProducer(bootstrap_servers=[KAFKA_URL])
+		logger.info("Connected to Kafka")
+	except Exception as e:
+		logger.error("Failed to connect to Kafka, retrying in 5 seconds")
+		time.sleep(5)
 
 #def checkLocation(method="freegeoip", speaker=None):
 def checkLocation(method="freegeoip"):
@@ -261,11 +264,14 @@ def checkWeather():
 if __name__ == '__main__':
 	# get all instructions from Kafka
 	# topic: environment
-	try:
-		consumer = KafkaConsumer('environment', bootstrap_servers=KAFKA_URL)
-	except Exception as e:
-		logger.error("Failed to connect to Kafka environment topic")
-		producer.send("speak", b"Failed to connect to Kafka environment topic")
+	consumer = None
+	while consumer is None:
+		try:
+			consumer = KafkaConsumer('environment', bootstrap_servers=KAFKA_URL)
+			logger.info("Connected to Kafka environment topic")
+		except Exception as e:
+			logger.error("Failed to connect to Kafka environment topic, retrying in 5 seconds")
+			time.sleep(5)
 
 	while True:
 		for message in consumer:
