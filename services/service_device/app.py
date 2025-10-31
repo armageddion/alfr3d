@@ -25,6 +25,7 @@ DATABASE_NAME 	= os.environ['DATABASE_NAME']
 DATABASE_USER 	= os.environ['DATABASE_USER']
 DATABASE_PSWD 	= os.environ['DATABASE_PSWD']
 KAFKA_URL 		= os.environ['KAFKA_BOOTSTRAP_SERVERS']
+ALFR3D_ENV_NAME = os.environ.get('ALFR3D_ENV_NAME')
 
 producer = None
 while producer is None:
@@ -44,7 +45,7 @@ class Device:
 	MAC = '00:00:00:00:00:00'
 	state = 'offline'
 	last_online = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-	environment = socket.gethostname()
+	environment = ALFR3D_ENV_NAME
 	user = 'unknown'
 	deviceType = 'guest'
 
@@ -61,7 +62,7 @@ class Device:
 		data = cursor.fetchone()
 
 		if data:
-			logger.warn("device already exists.... aborting")
+			logger.warning("device already exists.... aborting")
 			db.close()
 			return False
 
@@ -100,7 +101,7 @@ class Device:
 		data = cursor.fetchone()
 
 		if not data:
-			logger.warning("Failed to find a device with MAC: " +mac+ " in the database")
+			logger.warning("Failed to find a device with MAC: " +self.MAC+ " in the database")
 			db.close()
 			return False
 
@@ -144,7 +145,7 @@ class Device:
 			cursor.execute("SELECT * from states WHERE state = %s", ("online",))
 			data = cursor.fetchone()
 			stateid = data[0]
-			cursor.execute("SELECT * from environment WHERE name = %s", (socket.gethostname(),))
+			cursor.execute("SELECT * from environment WHERE name = %s", (ALFR3D_ENV_NAME,))
 			data = cursor.fetchone()
 			envid = data[0]
 			cursor.execute("UPDATE device SET name = %s, IP = %s, last_online = %s, state = %s, environment_id = %s WHERE MAC = %s", (self.name, self.IP, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), stateid, envid, self.MAC))

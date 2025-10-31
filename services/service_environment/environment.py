@@ -25,21 +25,26 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 # get main DB credentials
-DATABASE_URL 	= os.environ['DATABASE_URL']
-DATABASE_NAME 	= os.environ['DATABASE_NAME']
-DATABASE_USER 	= os.environ['DATABASE_USER']
-DATABASE_PSWD 	= os.environ['DATABASE_PSWD']
-KAFKA_URL 		= os.environ['KAFKA_BOOTSTRAP_SERVERS']
+DATABASE_URL 	= os.environ.get('DATABASE_URL', 'mysql')
+DATABASE_NAME 	= os.environ.get('DATABASE_NAME', 'alfr3d')
+DATABASE_USER 	= os.environ.get('DATABASE_USER', 'alfr3d')
+DATABASE_PSWD 	= os.environ.get('DATABASE_PSWD', 'alfr3d')
+KAFKA_URL 		= os.environ.get('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
+ALFR3D_ENV_NAME = os.environ.get('ALFR3D_ENV_NAME', socket.gethostname())
 
 producer = None
-while producer is None:
-	try:
-		print("Connecting to Kafka at: "+KAFKA_URL)
-		producer = KafkaProducer(bootstrap_servers=[KAFKA_URL])
-		logger.info("Connected to Kafka")
-	except Exception as e:
-		logger.error("Failed to connect to Kafka, retrying in 5 seconds")
-		time.sleep(5)
+
+def get_producer():
+	global producer
+	if producer is None:
+		try:
+			print("Connecting to Kafka at: "+KAFKA_URL)
+			producer = KafkaProducer(bootstrap_servers=[KAFKA_URL])
+			logger.info("Connected to Kafka")
+		except Exception as e:
+			logger.error("Failed to connect to Kafka")
+			return None
+	return producer
 
 #def checkLocation(method="freegeoip", speaker=None):
 def checkLocation(method="freegeoip"):
@@ -47,7 +52,10 @@ def checkLocation(method="freegeoip"):
 		Check location based on IP
 	"""
 	logger.info("Checking environment info")
-	producer.send("speak", b"Checking environment info")
+	p = get_producer()
+	if p:
+		p.send("speak", b"Checking environment info")
+		p.flush()
 	# get latest DB environment info
 	# Initialize the database
 	db = pymysql.connect(host=DATABASE_URL, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
@@ -59,7 +67,7 @@ def checkLocation(method="freegeoip"):
 	ip = 'unknown'
 
 	try:
-		cursor.execute("SELECT * from environment WHERE name = %s", (socket.gethostname(),))
+		cursor.execute("SELECT * from environment WHERE name = %s", (ALFR3D_ENV_NAME,))
 		data = cursor.fetchone()
 
 		if data:
@@ -72,7 +80,7 @@ def checkLocation(method="freegeoip"):
 			logger.warning("Failed to find environment configuration for this host")
 			logger.info("Creating environment configuration for this host")
 			try:
-				cursor.execute("INSERT INTO environment (name) VALUES (%s)", (socket.gethostname(),))
+				cursor.execute("INSERT INTO environment (name) VALUES (%s)", (ALFR3D_ENV_NAME,))
 				db.commit()
 				logger.info("New environment created")
 			except Exception as e:
@@ -84,7 +92,10 @@ def checkLocation(method="freegeoip"):
 	except Exception as e:
 		logger.error("Environment check failed")
 		logger.error("Traceback "+str(e))
-		producer.send("speak", b"Environment check failed")
+		p = get_producer()
+		if p:
+			p.send("speak", b"Environment check failed")
+			p.flush()
 
 	# placeholders for my ip
 	myipv4 = None
@@ -222,14 +233,18 @@ def checkLocation(method="freegeoip"):
 
 	if city_new == city:
 		logger.info("You are still in the same location")
-		producer.send("speak", b"It would appear that I am in the same location as the last time")
+		p = get_producer()
+		if p:
+			p.send("speak", b"It would appear that I am in the same location as the last time")
 	else:
 		logger.info("Oh hello! Welcome to "+city_new)
-		producer.send("speak", b"Welcome to "+city_new.encode('utf-8')+b" sir")
-		producer.send("speak", b"I trust you enjoyed your travels")		
+		p = get_producer()
+		if p:
+			p.send("speak", b"Welcome to "+city_new.encode('utf-8')+b" sir")
+			p.send("speak", b"I trust you enjoyed your travels")		
 
 		try:
-			cursor.execute("UPDATE environment SET country = %s, state = %s, city = %s, IP = %s, latitude = %s, longitude = %s WHERE name = %s", (country_new, state_new, city_new, ip_new, lat_new, long_new, socket.gethostname()))
+			cursor.execute("UPDATE environment SET country = %s, state = %s, city = %s, IP = %s, latitude = %s, longitude = %s WHERE name = %s", (country_new, state_new, city_new, ip_new, lat_new, long_new, ALFR3D_ENV_NAME))
 			db.commit()
 			logger.info("Environment updated")
 		except Exception as e:
@@ -255,10 +270,13 @@ def checkWeather():
 	db = pymysql.connect(host=DATABASE_URL, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
 	cursor = db.cursor()
 
-	cursor.execute("SELECT * from environment WHERE name = %s", (socket.gethostname(),))
+	cursor.execute("SELECT * from environment WHERE name = %s", (ALFR3D_ENV_NAME,))
 	data = cursor.fetchone()
 
-	weather_util.getWeather(data[2],data[3])		
+	if data and data[2] and data[3]:
+		weather_util.getWeather(data[2], data[3])
+	else:
+		logger.warning("No location data available for weather check")		
 
 # Main
 if __name__ == '__main__':
@@ -275,12 +293,14 @@ if __name__ == '__main__':
 
 	while True:
 		for message in consumer:
-			if message.value.decode('ascii') == "alfr3d-env.exit":
+			msg = message.value.decode('ascii')
+			print(f"Received Kafka message: {msg}")
+			if msg == "alfr3d-env.exit":
 				logger.info("Received exit request. Stopping service.")
 				sys.exit()
-			if message.value.decode('ascii') == "check location":
+			if msg == "check location":
 				checkLocation()
-			if message.value.decode('ascii') == "check weather":
+			if msg == "check weather":
 				checkWeather()
 
 			time.sleep(10)

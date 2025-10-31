@@ -26,6 +26,7 @@ DATABASE_NAME     = os.environ['DATABASE_NAME']
 DATABASE_USER     = os.environ['DATABASE_USER']
 DATABASE_PSWD     = os.environ['DATABASE_PSWD']
 KAFKA_URL         = os.environ['KAFKA_BOOTSTRAP_SERVERS']
+ALFR3D_ENV_NAME   = os.environ.get('ALFR3D_ENV_NAME', 'test')
 
 producer = None
 while producer is None:
@@ -68,7 +69,7 @@ class User:
             usrstate = cursor.fetchone()[0]
             cursor.execute("SELECT * from user_types WHERE type = %s", ("guest",))
             usrtype = cursor.fetchone()[0]
-            cursor.execute("SELECT * from environment WHERE name = %s", (socket.gethostname(),))
+            cursor.execute("SELECT * from environment WHERE name = %s", (ALFR3D_ENV_NAME,))
             envid = cursor.fetchone()[0]            
             cursor.execute("INSERT INTO user(username, last_online, state, type, environment_id) VALUES (%s, %s, %s, %s, %s)", (self.name, self.last_online, usrstate, usrtype, envid))
             db.commit()
@@ -96,7 +97,7 @@ class User:
         data = cursor.fetchone()
 
         if not data:
-            logger.warn("Failed to find user: " +self.name+ " in the database")
+            logger.warning("Failed to find user with username: " +self.name+ " in the database")
             db.close()
             return False
 
@@ -135,7 +136,7 @@ class User:
             data = cursor.fetchone()
             stateid = data[0]
             cursor.execute("UPDATE user SET state = %s WHERE username = %s", (stateid, self.name))
-            cursor.execute("SELECT * from environment WHERE name = %s", (socket.gethostname(),))
+            cursor.execute("SELECT * from environment WHERE name = %s", (ALFR3D_ENV_NAME,))
             data = cursor.fetchone()
             envid = data[0]
             cursor.execute("UPDATE user SET environment_id = %s WHERE username = %s", (envid, self.name))
@@ -164,7 +165,7 @@ class User:
         data = cursor.fetchone()
 
         if not data:
-            logger.warn("Failed to find user with username: " +self.name+ " in the database")
+            logger.warning("Failed to find user with username: " +self.name+ " in the database")
             db.close()
             return False
 
@@ -230,7 +231,7 @@ def refreshAll():
             devices = cursor.fetchall()
             for device in devices:
                 # update last_online time for that user
-                if device[0] > user[6]:
+                if device[0] and user[6] and device[0] > user[6]:
                     logger.info("Updating user "+user[1])
                     cursor.execute("UPDATE user SET last_online = \""+str(device[0])+"\" WHERE username = \""+user[1]+"\";")
                     cursor.execute("UPDATE user SET environment_id = \""+str(env_id)+"\" WHERE username = \""+user[1]+"\";")
@@ -246,7 +247,10 @@ def refreshAll():
         # or a few... in case one of them misses it :)
         try:
             time_now = datetime.now()
-            delta = time_now-last_online
+            if last_online:
+                delta = time_now - last_online
+            else:
+                delta = timedelta(minutes=60)
         except Exception as  e:
             logger.error("Failed to figure out the timedelta")
             delta = timedelta(minutes=60)
@@ -298,7 +302,7 @@ if __name__ == '__main__':
     consumer = None
     while consumer is None:
         try:
-            consumer = KafkaConsumer('user', bootstrap_servers=KAFKA_URL)
+            consumer = KafkaConsumer('user', bootstrap_servers=KAFKA_URL, auto_offset_reset='earliest')
             logger.info("Connected to Kafka user topic")
         except Exception as e:
             logger.error("Failed to connect to Kafka user topic, retrying in 5 seconds")

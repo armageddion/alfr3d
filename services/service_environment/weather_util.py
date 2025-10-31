@@ -6,6 +6,7 @@ import logging										# needed for useful logs
 import socket
 import pymysql  # Changed from MySQLdb
 import sys
+import time
 from datetime import datetime, timedelta
 from kafka import KafkaConsumer,KafkaProducer
 from time import gmtime, strftime, localtime		# needed to obtain time
@@ -25,19 +26,26 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 # get main DB credentials
-DATABASE_URL 	= os.environ['DATABASE_URL']
-DATABASE_NAME 	= os.environ['DATABASE_NAME']
-DATABASE_USER 	= os.environ['DATABASE_USER']
-DATABASE_PSWD 	= os.environ['DATABASE_PSWD']
-KAFKA_URL 		= os.environ['KAFKA_BOOTSTRAP_SERVERS']
+DATABASE_URL 	= os.environ.get('DATABASE_URL', 'mysql')
+DATABASE_NAME 	= os.environ.get('DATABASE_NAME', 'alfr3d')
+DATABASE_USER 	= os.environ.get('DATABASE_USER', 'alfr3d')
+DATABASE_PSWD 	= os.environ.get('DATABASE_PSWD', 'alfr3d')
+KAFKA_URL 		= os.environ.get('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
+ALFR3D_ENV_NAME = os.environ.get('ALFR3D_ENV_NAME', socket.gethostname())
 
 producer = None
-try:
-	print("Connecting to Kafka at: "+KAFKA_URL)
-	producer = KafkaProducer(bootstrap_servers=[KAFKA_URL])
-except Exception as e:
-	logger.error("Failed to connect to Kafka")
-	sys.exit()
+
+def get_producer():
+	global producer
+	if producer is None:
+		try:
+			print("Connecting to Kafka at: "+KAFKA_URL)
+			producer = KafkaProducer(bootstrap_servers=[KAFKA_URL])
+			logger.info("Connected to Kafka")
+		except Exception as e:
+			logger.error("Failed to connect to Kafka")
+			return None
+	return producer
 
 def getWeather(lat,lon):
 	"""
@@ -101,7 +109,7 @@ def getWeather(lat,lon):
 			datetime.fromtimestamp(weatherData['sys']['sunset']).strftime("%Y-%m-%d %H:%M:%S"),
 			int(weatherData['main']['pressure']),
 			int(weatherData['main']['humidity']),
-			socket.gethostname()
+			ALFR3D_ENV_NAME
 		))
 		db.commit()
 		logger.info("Environment weather info updated")
@@ -119,8 +127,12 @@ def getWeather(lat,lon):
 		logger.info("Updating routines")
 		sunrise_trig = datetime.fromtimestamp(weatherData['sys']['sunrise']) - timedelta(hours=0,minutes=30)
 		sunset_trig = datetime.fromtimestamp(weatherData['sys']['sunset']) - timedelta(hours=0,minutes=30)
-		cursor.execute("SELECT * FROM environment WHERE name = %s", (socket.gethostname(),))
+		cursor.execute("SELECT * FROM environment WHERE name = %s", (ALFR3D_ENV_NAME,))
 		env_data = cursor.fetchone()
+		if not env_data:
+			logger.error("Environment not found for " + ALFR3D_ENV_NAME)
+			db.close()
+			return False
 		env_id = env_data[0]
 		cursor.execute("UPDATE routines SET time = CASE name WHEN 'Sunrise' THEN %s WHEN 'Sunset' THEN %s END, triggered = 0 WHERE name IN ('Sunrise', 'Sunset') AND environment_id = %s", (sunrise_trig.strftime("%H:%M:%S"), sunset_trig.strftime("%H:%M:%S"), env_id))
 		db.commit()

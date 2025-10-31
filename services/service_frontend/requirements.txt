@@ -1,13 +1,4 @@
-Flask
-Flask-SQLAlchemy
-Flask-Migrate
-Flask-Login
-Flask-Bootstrap
-PyJWT
-Werkzeug
+flask
+kafka-python-ng
 pymysql
-pytest
-hypothesis
-requests
-flake8
-black
+cryptography

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Alfr3d Control Panel</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .section { margin-bottom: 40px; }
+    </style>
+</head>
+<body>
+    <h1>Alfr3d Control Panel</h1>
+    <h2>Commands</h2>
+    <form action="/command" method="post">
+        <button type="submit" name="command" value="check_location">Check Location</button>
+        <button type="submit" name="command" value="check_weather">Check Weather</button>
+        <button type="submit" name="command" value="scan_network">Scan Network</button>
+        <button type="submit" name="command" value="check_gmail">Check Gmail</button>
+    </form>
+
+     <div class="section">
+         <h2>Users</h2>
+         <h3>Add User</h3>
+         <form action="/user/add" method="post">
+             <label>Username:</label> <input name="username" required>
+             <label>Email:</label> <input name="email" required>
+             <label>Type:</label> <select name="type">
+                 {% for ut in user_types %}
+                 <option value="{{ ut[1] }}">{{ ut[1] }}</option>
+                 {% endfor %}
+             </select>
+             <button type="submit">Add User</button>
+         </form>
+         <table>
+             <tr><th>ID</th><th>Username</th><th>Email</th><th>State</th><th>Type</th><th>Actions</th></tr>
+             {% for user in users %}
+             <tr>
+                 <td>{{ user[0] }}</td><td>{{ user[1] }}</td><td>{{ user[2] }}</td><td>{{ user[3] }}</td><td>{{ user[4] }}</td>
+                 <td>
+                     <form action="/user/edit" method="post" style="display:inline;">
+                         <input type="hidden" name="id" value="{{ user[0] }}">
+                         <label>Username:</label> <input name="username" value="{{ user[1] }}" required>
+                         <label>Email:</label> <input name="email" value="{{ user[2] }}" required>
+                         <button type="submit">Save</button>
+                     </form>
+                     <form action="/user/delete" method="post" style="display:inline;">
+                         <input type="hidden" name="id" value="{{ user[0] }}">
+                         <button type="submit">Delete</button>
+                     </form>
+                 </td>
+             </tr>
+             {% endfor %}
+         </table>
+     </div>
+
+      <div class="section">
+          <h2>Devices</h2>
+          <table>
+              <tr><th>ID</th><th>Name</th><th>IP</th><th>State</th><th>Device Type</th><th>Username</th><th>Edit</th></tr>
+              {% for device in devices %}
+              <tr>
+                  <td>{{ device[0] }}</td><td>{{ device[1] }}</td><td>{{ device[2] }}</td><td>{{ device[3] }}</td><td>{{ device[4] }}</td><td>{{ device[5] }}</td>
+                  <td>
+                      <form action="/device/edit" method="post" style="display:inline;">
+                          <input type="hidden" name="id" value="{{ device[0] }}">
+                          <label>Name:</label>
+                          <input type="text" name="name" value="{{ device[1] }}" required>
+                          <label>Device Type:</label>
+                          <select name="device_type" required>
+                              {% for dt in device_types %}
+                              <option value="{{ dt[1] }}" {% if dt[1] == device[4] %}selected{% endif %}>{{ dt[1] }}</option>
+                              {% endfor %}
+                          </select>
+                          <label>Username:</label>
+                          <select name="username" required>
+                              {% for user in all_users %}
+                              <option value="{{ user[1] }}" {% if user[1] == device[5] %}selected{% endif %}>{{ user[1] }}</option>
+                              {% endfor %}
+                          </select>
+                          <button type="submit">Save</button>
+                      </form>
+                  </td>
+              </tr>
+              {% endfor %}
+          </table>
+      </div>
+
+     <div class="section">
+         <h2>Environment</h2>
+         <table>
+             <tr><th>ID</th><th>Name</th><th>City</th><th>Country</th><th>Latitude</th><th>Longitude</th></tr>
+             {% for env in environments %}
+             <tr>
+                 <td>{{ env[0] }}</td>
+                 <td>
+                     <form action="/environment/edit" method="post" style="display:inline;">
+                         <input type="hidden" name="id" value="{{ env[0] }}">
+                         <input type="text" name="name" value="{{ env[1] }}" required>
+                         <button type="submit">Save</button>
+                     </form>
+                 </td>
+                 <td>{{ env[2] }}</td><td>{{ env[3] }}</td><td>{{ env[4] }}</td><td>{{ env[5] }}</td>
+             </tr>
+             {% endfor %}
+         </table>
+     </div>
+
+    <div class="section">
+        <h2>Routines</h2>
+        <table>
+            <tr><th>ID</th><th>Name</th><th>Time</th><th>Enabled</th></tr>
+            {% for routine in routines %}
+            <tr><td>{{ routine[0] }}</td><td>{{ routine[1] }}</td><td>{{ routine[2] }}</td><td>{{ routine[3] }}</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>
