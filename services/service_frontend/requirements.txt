@@ -2,3 +2,6 @@ flask
 kafka-python-ng
 pymysql
 cryptography
+kubernetes
+psutil
+dash

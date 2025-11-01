@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Alfr3d Dashboard</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        nav { background-color: #f2f2f2; padding: 10px; }
+        nav a { margin-right: 20px; text-decoration: none; }
+        .container { padding: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .section { margin-bottom: 40px; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/control">Control</a>
+    </nav>
+    <div class="container">
+        <h1>Alfr3d Dashboard</h1>
+
+        <div class="section">
+            <h2>Container Health</h2>
+            <table>
+                <tr><th>Pod Name</th><th>Status</th><th>CPU (cores)</th><th>Memory (Mi)</th><th>Storage (%)</th></tr>
+                {% for pod, info in container_health.items() %}
+                <tr><td>{{ pod }}</td><td>{{ info.status }}</td><td>{{ info.cpu }}</td><td>{{ info.memory }}</td><td>{{ info.storage }}</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Container Network</h2>
+            <div id="network-graph"></div>
+        </div>
+
+        <div class="section">
+            <h2>System Metrics (Frontend Container)</h2>
+            <p>CPU Usage: {{ system_metrics.cpu_percent }}%</p>
+            <p>Memory Usage: {{ system_metrics.memory_percent }}%</p>
+            <p>Disk Usage: {{ system_metrics.disk_percent }}%</p>
+        </div>
+
+        <div class="section">
+            <h2>Kafka Details</h2>
+            <h3>Topics</h3>
+            <table>
+                <tr><th>Topic Name</th><th>Partitions</th></tr>
+                {% for topic in kafka_details.topics %}
+                <tr><td>{{ topic.name }}</td><td>{{ topic.partitions }}</td></tr>
+                {% endfor %}
+            </table>
+            <p>Consumer Lag: {{ kafka_details.consumer_lag }}</p>
+        </div>
+
+        <div class="section">
+            <h2>MySQL Details</h2>
+            <p>Active Connections: {{ mysql_details.connections }}</p>
+            <p>Average Query Latency: {{ mysql_details.query_latency }} seconds</p>
+            <p>Table Errors: {{ mysql_details.table_errors }}</p>
+        </div>
+    </div>
+    <script>
+        var containerHealth = {{ container_health | tojson }};
+        var kafkaTopics = {{ kafka_topics | tojson }};
+
+        // Prepare nodes
+        var nodes = Object.keys(containerHealth).map(function(pod) {
+            return {id: pod, ...containerHealth[pod]};
+        });
+
+        // Prepare links
+        var links = [];
+        var colors = d3.scaleOrdinal(d3.schemeCategory10);
+        var topicIndex = 0;
+        Object.keys(kafkaTopics).forEach(function(topic) {
+            var source = kafkaTopics[topic][0];
+            var dests = kafkaTopics[topic][1];
+            dests.forEach(function(dest) {
+                links.push({source: source, target: dest, topic: topic, color: colors(topicIndex)});
+            });
+            topicIndex++;
+        });
+
+        var svg = d3.select("#network-graph").append("svg")
+            .attr("width", 800)
+            .attr("height", 600);
+
+        var simulation = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(links).id(d => d.id).distance(150))
+            .force("charge", d3.forceManyBody().strength(-300))
+            .force("center", d3.forceCenter(400, 300));
+
+        var link = svg.append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(links)
+            .enter().append("line")
+            .attr("stroke", d => d.color)
+            .attr("stroke-width", 2);
+
+        var node = svg.append("g")
+            .attr("class", "nodes")
+            .selectAll("circle")
+            .data(nodes)
+            .enter().append("circle")
+            .attr("r", 20)
+            .attr("fill", d => d.status === 'Running' ? 'green' : 'red')
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        var labels = svg.append("g")
+            .attr("class", "labels")
+            .selectAll("text")
+            .data(nodes)
+            .enter().append("text")
+            .attr("dy", -25)
+            .attr("text-anchor", "middle")
+            .text(d => d.id + '\nCPU: ' + d.cpu + '\nMem: ' + d.memory);
+
+        simulation.on("tick", function() {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            node
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y);
+
+            labels
+                .attr("x", d => d.x)
+                .attr("y", d => d.y);
+        });
+
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        function updateData() {
+            fetch('/dashboard/data')
+                .then(response => response.json())
+                .then(data => {
+                    var newHealth = data.container_health;
+                    nodes.forEach(function(node) {
+                        if (newHealth[node.id]) {
+                            node.status = newHealth[node.id].status;
+                            node.cpu = newHealth[node.id].cpu;
+                            node.memory = newHealth[node.id].memory;
+                            node.storage = newHealth[node.id].storage;
+                        }
+                    });
+                    node.attr("fill", d => d.status === 'Running' ? 'green' : 'red');
+                    labels.text(d => d.id + '\nCPU: ' + d.cpu + '\nMem: ' + d.memory);
+                });
+        }
+
+        setInterval(updateData, 5000); // Update every 5 seconds
+    </script>
+</body>
+</html>

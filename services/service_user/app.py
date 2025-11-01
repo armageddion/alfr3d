@@ -209,7 +209,8 @@ def refreshAll():
         stat[state[1]]=state[0]
 
     # figure out environments
-    cursor.execute("SELECT * FROM environment WHERE name = \""+socket.gethostname()+"\";")
+    
+    cursor.execute("SELECT * FROM environment WHERE name = %s", (ALFR3D_ENV_NAME,))
     env_data = cursor.fetchone()
     if env_data:
         env = env_data[1]
