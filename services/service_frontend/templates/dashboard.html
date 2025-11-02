@@ -1,179 +1,204 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Alfr3d Dashboard</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <style>
-        nav { background-color: #f2f2f2; padding: 10px; }
-        nav a { margin-right: 20px; text-decoration: none; }
-        .container { padding: 20px; }
-        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .section { margin-bottom: 40px; }
-    </style>
+    <title>ALFR3D Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <nav>
         <a href="/dashboard">Dashboard</a>
         <a href="/control">Control</a>
     </nav>
-    <div class="container">
-        <h1>Alfr3d Dashboard</h1>
 
-        <div class="section">
-            <h2>Container Health</h2>
-            <table>
-                <tr><th>Pod Name</th><th>Status</th><th>CPU (cores)</th><th>Memory (Mi)</th><th>Storage (%)</th></tr>
-                {% for pod, info in container_health.items() %}
-                <tr><td>{{ pod }}</td><td>{{ info.status }}</td><td>{{ info.cpu }}</td><td>{{ info.memory }}</td><td>{{ info.storage }}</td></tr>
-                {% endfor %}
-            </table>
-        </div>
+    <!-- Dash app will be inserted here -->
+    <div id="dash-container">
+        <div class="page">
+            <h2 class="page-title">ALFR3D: Container Dashboard</h2>
+            <div class="canvas">
+                <!-- Container nodes will be dynamically added here -->
+                <div class="node-card" style="left: 80px; top: 40px; width: 240px; height: 120px;">
+                    <div class="node-title">daemon</div>
+                    <div class="node-health" style="background-color: #27ae60;"></div>
+                    <div class="metrics-list">
+                        <div class="metric-row">
+                            <div class="metric-name">CPU</div>
+                            <div class="metric-bar-bg">
+                                <div class="metric-bar-fill" style="width: 25%;"></div>
+                            </div>
+                            <div class="metric-value">25%</div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-name">MEM</div>
+                            <div class="metric-bar-bg">
+                                <div class="metric-bar-fill" style="width: 40%;"></div>
+                            </div>
+                            <div class="metric-value">40%</div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-name">ERR</div>
+                            <div class="metric-pill">0</div>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="section">
-            <h2>Container Network</h2>
-            <div id="network-graph"></div>
-        </div>
+                <div class="node-card" style="left: 400px; top: 40px; width: 240px; height: 120px;">
+                    <div class="node-title">environment</div>
+                    <div class="node-health" style="background-color: #27ae60;"></div>
+                    <div class="metrics-list">
+                        <div class="metric-row">
+                            <div class="metric-name">CPU</div>
+                            <div class="metric-bar-bg">
+                                <div class="metric-bar-fill" style="width: 15%;"></div>
+                            </div>
+                            <div class="metric-value">15%</div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-name">MEM</div>
+                            <div class="metric-bar-bg">
+                                <div class="metric-bar-fill" style="width: 30%;"></div>
+                            </div>
+                            <div class="metric-value">30%</div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-name">ERR</div>
+                            <div class="metric-pill">0</div>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="section">
-            <h2>System Metrics (Frontend Container)</h2>
-            <p>CPU Usage: {{ system_metrics.cpu_percent }}%</p>
-            <p>Memory Usage: {{ system_metrics.memory_percent }}%</p>
-            <p>Disk Usage: {{ system_metrics.disk_percent }}%</p>
-        </div>
+                <div class="node-card" style="left: 720px; top: 40px; width: 240px; height: 120px;">
+                    <div class="node-title">frontend</div>
+                    <div class="node-health" style="background-color: #27ae60;"></div>
+                    <div class="metrics-list">
+                        <div class="metric-row">
+                            <div class="metric-name">CPU</div>
+                            <div class="metric-bar-bg">
+                                <div class="metric-bar-fill" style="width: 35%;"></div>
+                            </div>
+                            <div class="metric-value">35%</div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-name">MEM</div>
+                            <div class="metric-bar-bg">
+                                <div class="metric-bar-fill" style="width: 45%;"></div>
+                            </div>
+                            <div class="metric-value">45%</div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-name">ERR</div>
+                            <div class="metric-pill">0</div>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="section">
-            <h2>Kafka Details</h2>
-            <h3>Topics</h3>
-            <table>
-                <tr><th>Topic Name</th><th>Partitions</th></tr>
-                {% for topic in kafka_details.topics %}
-                <tr><td>{{ topic.name }}</td><td>{{ topic.partitions }}</td></tr>
-                {% endfor %}
-            </table>
-            <p>Consumer Lag: {{ kafka_details.consumer_lag }}</p>
-        </div>
+                <div class="node-card" style="left: 80px; top: 280px; width: 240px; height: 120px;">
+                    <div class="node-title">device</div>
+                    <div class="node-health" style="background-color: #27ae60;"></div>
+                    <div class="metrics-list">
+                        <div class="metric-row">
+                            <div class="metric-name">CPU</div>
+                            <div class="metric-bar-bg">
+                                <div class="metric-bar-fill" style="width: 20%;"></div>
+                            </div>
+                            <div class="metric-value">20%</div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-name">MEM</div>
+                            <div class="metric-bar-bg">
+                                <div class="metric-bar-fill" style="width: 35%;"></div>
+                            </div>
+                            <div class="metric-value">35%</div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-name">ERR</div>
+                            <div class="metric-pill">0</div>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="section">
-            <h2>MySQL Details</h2>
-            <p>Active Connections: {{ mysql_details.connections }}</p>
-            <p>Average Query Latency: {{ mysql_details.query_latency }} seconds</p>
-            <p>Table Errors: {{ mysql_details.table_errors }}</p>
+                <div class="node-card" style="left: 400px; top: 280px; width: 240px; height: 120px;">
+                    <div class="node-title">MySQL</div>
+                    <div class="node-health" style="background-color: #27ae60;"></div>
+                    <div class="metrics-list">
+                        <div class="metric-row">
+                            <div class="metric-name">CONN</div>
+                            <div class="metric-pill">5</div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-name">TBL</div>
+                            <div class="metric-pill">8</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="node-card" style="left: 720px; top: 280px; width: 240px; height: 120px;">
+                    <div class="node-title">user</div>
+                    <div class="node-health" style="background-color: #27ae60;"></div>
+                    <div class="metrics-list">
+                        <div class="metric-row">
+                            <div class="metric-name">CPU</div>
+                            <div class="metric-bar-bg">
+                                <div class="metric-bar-fill" style="width: 18%;"></div>
+                            </div>
+                            <div class="metric-value">18%</div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-name">MEM</div>
+                            <div class="metric-bar-bg">
+                                <div class="metric-bar-fill" style="width: 28%;"></div>
+                            </div>
+                            <div class="metric-value">28%</div>
+                        </div>
+                        <div class="metric-row">
+                            <div class="metric-name">ERR</div>
+                            <div class="metric-pill">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Animated Kafka topic connection lines -->
+                <svg class="connection-lines" width="100%" height="100%" viewBox="0 0 1000 650">
+                    <defs>
+                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#61dafb;stop-opacity:0.8" />
+                            <stop offset="50%" style="stop-color:#61dafb;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#61dafb;stop-opacity:0.8" />
+                        </linearGradient>
+                    </defs>
+
+                    <!-- speak: daemon -> environment (horizontal) -->
+                    <path d="M 200 100 L 520 100" class="connection-line speak-line" />
+
+                    <!-- google: daemon -> frontend (horizontal) -->
+                    <path d="M 200 100 L 840 100" class="connection-line google-line" />
+
+                    <!-- user: daemon -> user (horizontal then vertical) -->
+                    <path d="M 200 100 L 360 100 L 360 340 L 840 340" class="connection-line user-line" />
+
+                    <!-- device: frontend -> user (vertical then horizontal) -->
+                    <path d="M 840 100 L 840 220 L 720 220 L 720 340 L 840 340" class="connection-line device-line" />
+
+                    <!-- device_daemon: frontend -> daemon (horizontal) -->
+                    <path d="M 840 100 L 200 100" class="connection-line device-daemon-line" />
+
+                    <!-- environment: environment -> daemon (horizontal) -->
+                    <path d="M 520 100 L 200 100" class="connection-line environment-line" />
+                </svg>
+            </div>
+            <div class="legend">
+                <span>Legend:</span>
+                <span class="legend-pill up"></span> <span>Healthy</span>
+                <span class="legend-pill warn"></span> <span>Warning</span>
+                <span class="legend-pill down"></span> <span>Down</span>
+            </div>
         </div>
     </div>
+
     <script>
-        var containerHealth = {{ container_health | tojson }};
-        var kafkaTopics = {{ kafka_topics | tojson }};
-
-        // Prepare nodes
-        var nodes = Object.keys(containerHealth).map(function(pod) {
-            return {id: pod, ...containerHealth[pod]};
-        });
-
-        // Prepare links
-        var links = [];
-        var colors = d3.scaleOrdinal(d3.schemeCategory10);
-        var topicIndex = 0;
-        Object.keys(kafkaTopics).forEach(function(topic) {
-            var source = kafkaTopics[topic][0];
-            var dests = kafkaTopics[topic][1];
-            dests.forEach(function(dest) {
-                links.push({source: source, target: dest, topic: topic, color: colors(topicIndex)});
-            });
-            topicIndex++;
-        });
-
-        var svg = d3.select("#network-graph").append("svg")
-            .attr("width", 800)
-            .attr("height", 600);
-
-        var simulation = d3.forceSimulation(nodes)
-            .force("link", d3.forceLink(links).id(d => d.id).distance(150))
-            .force("charge", d3.forceManyBody().strength(-300))
-            .force("center", d3.forceCenter(400, 300));
-
-        var link = svg.append("g")
-            .attr("class", "links")
-            .selectAll("line")
-            .data(links)
-            .enter().append("line")
-            .attr("stroke", d => d.color)
-            .attr("stroke-width", 2);
-
-        var node = svg.append("g")
-            .attr("class", "nodes")
-            .selectAll("circle")
-            .data(nodes)
-            .enter().append("circle")
-            .attr("r", 20)
-            .attr("fill", d => d.status === 'Running' ? 'green' : 'red')
-            .call(d3.drag()
-                .on("start", dragstarted)
-                .on("drag", dragged)
-                .on("end", dragended));
-
-        var labels = svg.append("g")
-            .attr("class", "labels")
-            .selectAll("text")
-            .data(nodes)
-            .enter().append("text")
-            .attr("dy", -25)
-            .attr("text-anchor", "middle")
-            .text(d => d.id + '\nCPU: ' + d.cpu + '\nMem: ' + d.memory);
-
-        simulation.on("tick", function() {
-            link
-                .attr("x1", d => d.source.x)
-                .attr("y1", d => d.source.y)
-                .attr("x2", d => d.target.x)
-                .attr("y2", d => d.target.y);
-
-            node
-                .attr("cx", d => d.x)
-                .attr("cy", d => d.y);
-
-            labels
-                .attr("x", d => d.x)
-                .attr("y", d => d.y);
-        });
-
-        function dragstarted(event, d) {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
-        }
-
-        function dragged(event, d) {
-            d.fx = event.x;
-            d.fy = event.y;
-        }
-
-        function dragended(event, d) {
-            if (!event.active) simulation.alphaTarget(0);
-            d.fx = null;
-            d.fy = null;
-        }
-
-        function updateData() {
-            fetch('/dashboard/data')
-                .then(response => response.json())
-                .then(data => {
-                    var newHealth = data.container_health;
-                    nodes.forEach(function(node) {
-                        if (newHealth[node.id]) {
-                            node.status = newHealth[node.id].status;
-                            node.cpu = newHealth[node.id].cpu;
-                            node.memory = newHealth[node.id].memory;
-                            node.storage = newHealth[node.id].storage;
-                        }
-                    });
-                    node.attr("fill", d => d.status === 'Running' ? 'green' : 'red');
-                    labels.text(d => d.id + '\nCPU: ' + d.cpu + '\nMem: ' + d.memory);
-                });
-        }
-
-        setInterval(updateData, 5000); // Update every 5 seconds
+        // Simple auto-refresh for demo
+        setTimeout(function() {
+            location.reload();
+        }, 5000);
     </script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+apiVersion: extensions/v1beta1
 kind: StatefulSet
 metadata:
   name: zookeeper
@@ -16,10 +16,8 @@ spec:
       containers:
       - name: zookeeper
         image: confluentinc/cp-zookeeper:7.4.0
-        env:
-        - name: ZOOKEEPER_CLIENT_PORT
-          value: "2181"
-        - name: ZOOKEEPER_TICK_TIME
-          value: "2000"
+        envFrom:
+        - configMapRef:
+            name: alfr3d-k8s-env
         ports:
         - containerPort: 2181

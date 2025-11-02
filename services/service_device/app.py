@@ -20,10 +20,10 @@ handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-DATABASE_URL 	= os.environ['DATABASE_URL']
-DATABASE_NAME 	= os.environ['DATABASE_NAME']
-DATABASE_USER 	= os.environ['DATABASE_USER']
-DATABASE_PSWD 	= os.environ['DATABASE_PSWD']
+MYSQL_DATABASE_URL 	= os.environ['MYSQL_DATABASE_URL']
+MYSQL_DATABASE 	= os.environ['MYSQL_DATABASE']
+MYSQL_USER 	= os.environ['MYSQL_USER']
+MYSQL_PASSWORD 	= os.environ['MYSQL_PASSWORD']
 KAFKA_URL 		= os.environ['KAFKA_BOOTSTRAP_SERVERS']
 ALFR3D_ENV_NAME = os.environ.get('ALFR3D_ENV_NAME')
 
@@ -56,7 +56,7 @@ class Device:
 				Add new device to the database with default parameters
 		"""		
 		logger.info("Creating a new device")
-		db = pymysql.connect(host=DATABASE_URL, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+		db = pymysql.connect(host=MYSQL_DATABASE_URL, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
 		cursor = db.cursor()
 		cursor.execute("SELECT * from device WHERE MAC = %s", (mac,))
 		data = cursor.fetchone()
@@ -95,7 +95,7 @@ class Device:
 				Find device from DB by MAC
 		"""				
 		logger.info("Looking for device with MAC: " + mac)
-		db = pymysql.connect(host=DATABASE_URL, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+		db = pymysql.connect(host=MYSQL_DATABASE_URL, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
 		cursor = db.cursor()
 		cursor.execute("SELECT * from device WHERE MAC = %s", (mac,))
 		data = cursor.fetchone()
@@ -128,7 +128,7 @@ class Device:
 				Update a Device in DB
 		"""				
 		logger.info("Updating device")
-		db = pymysql.connect(host=DATABASE_URL, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+		db = pymysql.connect(host=MYSQL_DATABASE_URL, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
 		cursor = db.cursor()
 		cursor.execute("SELECT * from device WHERE MAC = %s", (self.MAC,))
 		data = cursor.fetchone()
@@ -169,7 +169,7 @@ class Device:
 				Delete a Device from DB
 		"""				
 		logger.info("Deleting device")
-		db = pymysql.connect(host=DATABASE_URL, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+		db = pymysql.connect(host=MYSQL_DATABASE_URL, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
 		cursor = db.cursor()
 		cursor.execute("SELECT * from device WHERE MAC = %s", (self.MAC,))
 		data = cursor.fetchone()

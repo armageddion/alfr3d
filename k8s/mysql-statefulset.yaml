@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+apiVersion: extensions/v1beta1
 kind: StatefulSet
 metadata:
   name: mysql
@@ -16,15 +16,9 @@ spec:
       containers:
       - name: mysql
         image: mysql:8.0
-        env:
-        - name: MYSQL_ROOT_PASSWORD
-          value: "rootpassword"
-        - name: MYSQL_DATABASE
-          value: "alfr3d_db"
-        - name: MYSQL_USER
-          value: "user"
-        - name: MYSQL_PASSWORD
-          value: "password"
+        envFrom:
+        - configMapRef:
+            name: alfr3d-k8s-env
         ports:
         - containerPort: 3306
         volumeMounts:

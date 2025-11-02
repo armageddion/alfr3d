@@ -15,14 +15,6 @@ spec:
       containers:
       - name: service-user
         image: alfr3d/service-user:latest
-        env:
-        - name: DATABASE_URL
-          value: "mysql"
-        - name: DATABASE_NAME
-          value: "alfr3d_db"
-        - name: DATABASE_USER
-          value: "user"
-        - name: DATABASE_PSWD
-          value: "password"
-        - name: KAFKA_URL
-          value: "kafka:9092"
+        envFrom:
+        - configMapRef:
+            name: alfr3d-k8s-env

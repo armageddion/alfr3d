@@ -26,10 +26,10 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 # get main DB credentials
-DATABASE_URL 	= os.environ.get('DATABASE_URL', 'mysql')
-DATABASE_NAME 	= os.environ.get('DATABASE_NAME', 'alfr3d')
-DATABASE_USER 	= os.environ.get('DATABASE_USER', 'alfr3d')
-DATABASE_PSWD 	= os.environ.get('DATABASE_PSWD', 'alfr3d')
+MYSQL_DATABASE_URL 	= os.environ.get('MYSQL_DATABASE_URL', 'mysql')
+MYSQL_DATABASE 	= os.environ.get('MYSQL_DATABASE', 'alfr3d')
+MYSQL_USER 	= os.environ.get('MYSQL_USER', 'alfr3d')
+MYSQL_PASSWORD 	= os.environ.get('MYSQL_PASSWORD', 'alfr3d')
 KAFKA_URL 		= os.environ.get('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
 ALFR3D_ENV_NAME = os.environ.get('ALFR3D_ENV_NAME', socket.gethostname())
 
@@ -55,7 +55,7 @@ def getWeather(lat,lon):
 			Boolean; True if successful, False if not.
 	"""
 	# connect to db
-	db = pymysql.connect(host=DATABASE_URL, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+	db = pymysql.connect(host=MYSQL_DATABASE_URL, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
 	cursor = db.cursor()
 
 	logger.info("getting API key for openWeather from DB")

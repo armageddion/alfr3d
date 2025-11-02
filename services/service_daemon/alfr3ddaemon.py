@@ -49,10 +49,10 @@ from utils import util_routines
 # directories created in Dockerfile
 
 # get main DB credentials
-DATABASE_URL 	= os.environ.get('DATABASE_URL')
-DATABASE_NAME 	= os.environ.get('DATABASE_NAME')
-DATABASE_USER 	= os.environ.get('DATABASE_USER')
-DATABASE_PSWD 	= os.environ.get('DATABASE_PSWD')
+MYSQL_DATABASE_URL 	= os.environ.get('MYSQL_DATABASE_URL')
+MYSQL_DATABASE 	= os.environ.get('MYSQL_DATABASE')
+MYSQL_USER 	= os.environ.get('MYSQL_USER')
+MYSQL_PASSWORD 	= os.environ.get('MYSQL_PASSWORD')
 KAFKA_URL       = os.environ['KAFKA_BOOTSTRAP_SERVERS']
 
 producer = None

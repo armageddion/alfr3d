@@ -15,10 +15,8 @@ spec:
       containers:
       - name: service-frontend
         image: alfr3d/service-frontend:latest
-        env:
-        - name: DATABASE_URL
-          value: "mysql://user:password@mysql/alfr3d_db"
-        - name: SECRET_KEY
-          value: "your-secret-key"
+        envFrom:
+        - configMapRef:
+            name: alfr3d-k8s-env
         ports:
         - containerPort: 8000

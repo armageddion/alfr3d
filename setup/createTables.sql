@@ -179,7 +179,9 @@ INSERT INTO `user_types` (`id`, `type`) VALUES ('3', 'guest');
 
 INSERT INTO `device_types` (`id`, `type`) VALUES ('1', 'alfr3d');
 INSERT INTO `device_types` (`id`, `type`) VALUES ('2', 'HW');
+INSERT INTO `device_types` (`id`, `type`) VALUES ('4', 'light');
 INSERT INTO `device_types` (`id`, `type`) VALUES ('3', 'guest');
+INSERT INTO `device_types` (`id`, `type`) VALUES ('4', 'resident');
 
 INSERT INTO `user` (`id`, `username`, `email`, `password_hash`, `about_me`, `last_online`, `state`, `type`, `environment_id`) VALUES ('1', 'athos', 'athos@littl31.com', '\'pbkdf2:sha256:260000$EVLamhqzR2ib572V$29ecaf8e9ef809496eebf2cc1dafc1c865e0efa0184a89dcca63492ced5290bf\'', '', '1000-01-01 00:00:00', 1, 1, 1);
 INSERT INTO `user` (`id`, `username`, `email`, `password_hash`, `about_me`, `last_online`, `state`, `type`, `environment_id`) VALUES ('2', 'unknown', '', '', '', '1000-01-01 00:00:00', 1, 3, 1);

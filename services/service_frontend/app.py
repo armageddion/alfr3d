@@ -8,12 +8,10 @@ import logging
 import sys
 import psutil
 from kubernetes import client, config
-from dash import Dash, dcc, html
-from dash.dependencies import Input, Output
 import requests
 import time
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler(sys.stdout)
@@ -23,9 +21,9 @@ logger.addHandler(handler)
 
 KAFKA_URL = os.environ['KAFKA_BOOTSTRAP_SERVERS']
 DATABASE_HOST = 'mysql'  # Service name in docker-compose
-DATABASE_NAME = os.environ.get('DATABASE_NAME', 'alfr3d_db')
-DATABASE_USER = os.environ.get('DATABASE_USER', 'user')
-DATABASE_PSWD = os.environ.get('DATABASE_PSWD', 'password')
+MYSQL_DATABASE = os.environ.get('MYSQL_DATABASE', 'alfr3d_db')
+MYSQL_USER = os.environ.get('MYSQL_USER', 'user')
+MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', 'password')
 
 # =======================
 # CONFIGURATION
@@ -43,131 +41,19 @@ SERVICES = {
 KAFKA_TOPICS = {
     "speak": ("service_daemon", ["service_environment"]),
     "google": ("service_daemon", ["service_frontend"]),
-    "user": ("service_daemon", ["service_speak"]),
-    "device": ("service_frontend", ["service_speak", "service_user"]),
-    "environment": ("service_daemon", ["service_speak"]),
+    "user": ("service_daemon", ["service_user"]),
+    "device": ("service_frontend", ["service_device", "service_user"]),
+    "environment": ("service_daemon", ["service_environment"]),
 }
 
 DB_CONFIG = {
     "host": DATABASE_HOST,
-    "user": DATABASE_USER,
-    "password": DATABASE_PSWD,
-    "database": DATABASE_NAME
+    "user": MYSQL_USER,
+    "password": MYSQL_PASSWORD,
+    "database": MYSQL_DATABASE
 }
 
-def check_mysql_health():
-    try:
-        start = time.time()
-        conn = pymysql.connect(**DB_CONFIG)
-        cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM information_schema.tables;")
-        count = cursor.fetchone()[0]
-        latency = (time.time() - start) * 1000
-        conn.close()
-        return {"status": "up", "tables": count, "latency": latency}
-    except Exception as e:
-        return {"status": "down", "error": str(e)}
-
-def check_service_health(url):
-    try:
-        r = requests.get(url, timeout=1.5)
-        if r.status_code == 200:
-            return "up"
-        else:
-            return "warn"
-    except:
-        return "down"
-
 producer = None
-
-dash_app = Dash(__name__, server=app, url_base_pathname='/dashboard/')
-
-dash_app.layout = html.Div(
-    style={"fontFamily": "Arial", "backgroundColor": "#0e1012", "color": "white", "padding": "20px"},
-    children=[
-        html.H2("System Health Dashboard", style={"textAlign": "center", "color": "#61dafb"}),
-        dcc.Interval(id="update", interval=3000, n_intervals=0),
-
-        # SERVICES + MYSQL
-        html.Div(id="service-status", style={"display": "flex", "justifyContent": "space-around", "flexWrap": "wrap"}),
-        html.Div(id="mysql-status", style={"marginTop": "30px"}),
-
-        html.Hr(style={"marginTop": "40px", "borderColor": "#333"}),
-
-        # KAFKA CONNECTION MAP
-        html.Div([
-            html.H3("Kafka Topic Connections", style={"color": "#61dafb", "textAlign": "center"}),
-            html.Div(id="kafka-map", style={
-                "position": "relative",
-                "width": "100%",
-                "height": "400px",
-                "backgroundColor": "#1c1f24",
-                "border": "1px solid #333",
-                "borderRadius": "10px",
-                "padding": "10px"
-            })
-        ]),
-
-        html.Hr(style={"marginTop": "40px", "borderColor": "#333"}),
-
-        # CPU GRAPH
-        html.Div([
-            html.H4("CPU Usage (%)"),
-            dcc.Graph(id="cpu-graph", style={"height": "300px"})
-        ])
-    ]
-)
-
-@dash_app.callback(
-    [Output("service-status", "children"),
-     Output("mysql-status", "children"),
-     Output("kafka-map", "children"),
-     Output("cpu-graph", "figure")],
-    [Input("update", "n_intervals")]
-)
-def update_dashboard(n):
-    # Check services
-    service_divs = []
-    for name, url in SERVICES.items():
-        status = check_service_health(url)
-        color = {"up": "#27ae60", "warn": "#f1c40f", "down": "#e74c3c"}[status]
-        glow = f"0 0 15px {color}"
-        service_divs.append(html.Div(
-            [
-                html.H4(name, style={"textAlign": "center"}),
-                html.Div("●", style={"fontSize": "50px", "color": color, "textShadow": glow, "textAlign": "center"}),
-                html.Div(status.upper(), style={"textAlign": "center"})
-            ],
-            style={"width": "160px", "padding": "10px", "borderRadius": "10px", "background": "#1c1f24", "margin": "10px"}
-        ))
-
-    # MySQL
-    db = check_mysql_health()
-    db_color = "#27ae60" if db["status"] == "up" else "#e74c3c"
-    mysql_div = html.Div([
-        html.H3("MySQL Status", style={"color": "#61dafb"}),
-        html.P(f"Status: {db['status'].upper()}", style={"color": db_color}),
-        html.P(f"Tables: {db.get('tables', '—')}"),
-        html.P(f"Latency: {db.get('latency', 0):.2f} ms"),
-    ])
-
-    # Kafka map - simple text representation
-    kafka_divs = []
-    for topic, (source, dests) in KAFKA_TOPICS.items():
-        kafka_divs.append(html.Div([
-            html.Strong(f"{source} → {topic} → {', '.join(dests)}")
-        ], style={"margin": "5px"}))
-    kafka_div = html.Div(kafka_divs)
-
-    # CPU graph (animated)
-    cpu_percent = psutil.cpu_percent()
-    fig = {
-        "data": [{"x": [time.strftime("%H:%M:%S")], "y": [cpu_percent],
-                  "type": "bar", "marker": {"color": "#61dafb"}}],
-        "layout": {"yaxis": {"range": [0, 100]}, "transition": {"duration": 300}}
-    }
-
-    return service_divs, mysql_div, kafka_div, fig
 
 def get_producer():
     global producer
@@ -181,61 +67,17 @@ def get_producer():
     return producer
 
 def get_container_health():
-    try:
-        config.load_incluster_config()
-        v1 = client.CoreV1Api()
-        custom_api = client.CustomObjectsApi()
-        pods = v1.list_pod_for_all_namespaces(watch=False)
-        health = {}
-        # Get metrics if available
-        try:
-            metrics = custom_api.list_cluster_custom_object("metrics.k8s.io", "v1beta1", "pods")
-            metrics_dict = {}
-            for item in metrics['items']:
-                pod_name = item['metadata']['name']
-                namespace = item['metadata']['namespace']
-                key = f"{namespace}/{pod_name}"
-                cpu_total = 0
-                memory_total = 0
-                for container in item['containers']:
-                    cpu_str = container['usage']['cpu']
-                    if cpu_str.endswith('m'):
-                        cpu_total += int(cpu_str[:-1]) / 1000  # milli-cores to cores
-                    else:
-                        cpu_total += float(cpu_str)
-                    mem_str = container['usage']['memory']
-                    if mem_str.endswith('Ki'):
-                        memory_total += int(mem_str[:-2]) / 1024  # Ki to Mi
-                    elif mem_str.endswith('Mi'):
-                        memory_total += int(mem_str[:-2])
-                    elif mem_str.endswith('Gi'):
-                        memory_total += int(mem_str[:-2]) * 1024  # Gi to Mi
-                    else:
-                        memory_total += int(mem_str) / (1024 * 1024)  # assume bytes to Mi
-                metrics_dict[key] = {'cpu': round(cpu_total, 2), 'memory': round(memory_total, 2)}
-        except Exception as e:
-            print(f"Metrics not available: {e}")
-            metrics_dict = {}
-
-        for pod in pods.items:
-            if pod.metadata.namespace == 'default':  # assuming default namespace
-                pod_name = pod.metadata.name
-                key = f"default/{pod_name}"
-                status = pod.status.phase
-                cpu = metrics_dict.get(key, {}).get('cpu', 'N/A')
-                memory = metrics_dict.get(key, {}).get('memory', 'N/A')
-                # For storage, approximate with disk usage if local, else N/A
-                storage = 'N/A'  # TODO: implement storage metrics
-                health[pod_name] = {
-                    'status': status,
-                    'cpu': cpu,
-                    'memory': memory,
-                    'storage': storage
-                }
-        return health
-    except Exception as e:
-        print(f"Failed to get container health: {e}")
-        return {}
+    # Since running in docker-compose, not k8s, mock or skip
+    # For demo, return mock data based on SERVICES
+    health = {}
+    for service in SERVICES.keys():
+        health[service] = {
+            'status': 'Running',  # Assume running
+            'cpu': round(0.1 + 0.1 * len(service), 2),  # Mock CPU
+            'memory': round(50 + 10 * len(service), 2),  # Mock memory
+            'storage': 'N/A'
+        }
+    return health
 
 def get_system_metrics():
     # Local metrics for frontend container
@@ -252,11 +94,11 @@ def get_kafka_details():
         details = {'topics': []}
         for topic in topics:
             partitions = admin_client.describe_topics([topic])
-            if partitions:
-                part_info = partitions[0]
+            if partitions and topic in partitions:
+                topic_desc = partitions[topic]
                 details['topics'].append({
                     'name': topic,
-                    'partitions': len(part_info.partitions)
+                    'partitions': len(topic_desc.partitions)
                 })
         # For consumer lag, need consumer groups, but simplified
         details['consumer_lag'] = 'Not implemented'  # Placeholder
@@ -268,19 +110,25 @@ def get_kafka_details():
 
 def get_mysql_details():
     try:
-        db = pymysql.connect(host=DATABASE_HOST, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+        db = pymysql.connect(host=DATABASE_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
         cursor = db.cursor()
         # Connections
         cursor.execute("SHOW PROCESSLIST")
         connections = len(cursor.fetchall())
         # Query latency - simplified, average from performance_schema if available
-        cursor.execute("SELECT AVG(timer_wait/1000000000) FROM performance_schema.events_statements_summary_by_digest WHERE schema_name = %s", (DATABASE_NAME,))
-        result = cursor.fetchone()
-        latency = result[0] if result else 0
+        try:
+            cursor.execute("SELECT AVG(timer_wait/1000000000) FROM performance_schema.events_statements_summary_by_digest WHERE schema_name = %s", (MYSQL_DATABASE,))
+            result = cursor.fetchone()
+            latency = result[0] if result and result[0] else 0
+        except:
+            latency = 'N/A'
         # Table errors - check for crashed tables or something
-        cursor.execute("SHOW TABLE STATUS WHERE Engine IS NOT NULL")
-        tables = cursor.fetchall()
-        errors = sum(1 for table in tables if table[14] == 'Error')  # Comment field
+        try:
+            cursor.execute("SHOW TABLE STATUS WHERE Engine IS NOT NULL")
+            tables = cursor.fetchall()
+            errors = sum(1 for table in tables if len(table) > 14 and table[14] == 'Error')  # Comment field
+        except:
+            errors = 'N/A'
         db.close()
         return {
             'connections': connections,
@@ -301,21 +149,20 @@ def health():
 
 @app.route('/dashboard')
 def dashboard():
-    container_health = get_container_health()
-    system_metrics = get_system_metrics()
-    kafka_details = get_kafka_details()
-    mysql_details = get_mysql_details()
-    return render_template('dashboard.html', container_health=container_health, system_metrics=system_metrics, kafka_details=kafka_details, mysql_details=mysql_details, kafka_topics=KAFKA_TOPICS)
+    # For now, serve the static dashboard template
+    # TODO: Make this dynamic with real data
+    return render_template('dashboard.html')
 
 @app.route('/dashboard/data')
 def dashboard_data():
     container_health = get_container_health()
     return jsonify({'container_health': container_health})
 
+
 @app.route('/control')
 def control():
     logger.info("Serving control page")
-    db = pymysql.connect(host=DATABASE_HOST, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+    db = pymysql.connect(host=DATABASE_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
     cursor = db.cursor()
 
     # Users
@@ -376,7 +223,7 @@ def command():
 
 @app.route('/users')
 def users():
-    db = pymysql.connect(host=DATABASE_HOST, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+    db = pymysql.connect(host=DATABASE_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
     cursor = db.cursor()
     cursor.execute("SELECT * FROM user")
     data = cursor.fetchall()
@@ -385,7 +232,7 @@ def users():
 
 @app.route('/devices')
 def devices():
-    db = pymysql.connect(host=DATABASE_HOST, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+    db = pymysql.connect(host=DATABASE_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
     cursor = db.cursor()
     cursor.execute("SELECT d.id, d.name, d.IP, d.MAC, s.state, d.last_online, e.name, dt.type, u.username FROM device d JOIN states s ON d.state = s.id JOIN device_types dt ON d.device_type = dt.id JOIN user u ON d.user_id = u.id JOIN environment e ON d.environment_id = e.id")
     data = cursor.fetchall()
@@ -394,7 +241,7 @@ def devices():
 
 @app.route('/environment')
 def environment():
-    db = pymysql.connect(host=DATABASE_HOST, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+    db = pymysql.connect(host=DATABASE_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
     cursor = db.cursor()
     cursor.execute("SELECT * FROM environment")
     data = cursor.fetchall()
@@ -403,7 +250,7 @@ def environment():
 
 @app.route('/routines')
 def routines():
-    db = pymysql.connect(host=DATABASE_HOST, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+    db = pymysql.connect(host=DATABASE_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
     cursor = db.cursor()
     cursor.execute("SELECT * FROM routines")
     data = cursor.fetchall()
@@ -412,7 +259,7 @@ def routines():
 
 @app.route('/states')
 def states():
-    db = pymysql.connect(host=DATABASE_HOST, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+    db = pymysql.connect(host=DATABASE_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
     cursor = db.cursor()
     cursor.execute("SELECT * FROM states")
     data = cursor.fetchall()
@@ -425,7 +272,7 @@ def edit_environment():
     name = request.form.get('name')
     if not name:
         return 'Error: Name cannot be empty', 400
-    db = pymysql.connect(host=DATABASE_HOST, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+    db = pymysql.connect(host=DATABASE_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
     cursor = db.cursor()
     try:
         cursor.execute("UPDATE environment SET name = %s WHERE id = %s", (name, env_id))
@@ -444,7 +291,7 @@ def add_user():
     user_type = request.form.get('type', 'guest')
     if not username or not email:
         return 'Error: Username and email required', 400
-    db = pymysql.connect(host=DATABASE_HOST, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+    db = pymysql.connect(host=DATABASE_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
     cursor = db.cursor()
     try:
         # Check if username exists
@@ -477,7 +324,7 @@ def edit_user():
     email = request.form.get('email')
     if not username or not email:
         return 'Error: Username and email required', 400
-    db = pymysql.connect(host=DATABASE_HOST, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+    db = pymysql.connect(host=DATABASE_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
     cursor = db.cursor()
     try:
         cursor.execute("UPDATE user SET username = %s, email = %s WHERE id = %s", (username, email, user_id))
@@ -492,7 +339,7 @@ def edit_user():
 @app.route('/user/delete', methods=['POST'])
 def delete_user():
     user_id = request.form.get('id')
-    db = pymysql.connect(host=DATABASE_HOST, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+    db = pymysql.connect(host=DATABASE_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
     cursor = db.cursor()
     try:
         cursor.execute("DELETE FROM user WHERE id = %s", (user_id,))
@@ -512,7 +359,7 @@ def edit_device():
     device_type = request.form.get('device_type')
     if not name or not username or not device_type:
         return 'Error: Name, Username and Device Type cannot be empty', 400
-    db = pymysql.connect(host=DATABASE_HOST, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+    db = pymysql.connect(host=DATABASE_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
     cursor = db.cursor()
     try:
         # Check if username exists
@@ -537,4 +384,5 @@ def edit_device():
     return redirect('/')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    port = int(os.environ.get('PORT', 8000))
+    app.run(host='0.0.0.0', port=port, debug=True)

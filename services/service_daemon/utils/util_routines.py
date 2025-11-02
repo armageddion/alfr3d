@@ -43,10 +43,10 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 # get main DB credentials
-DATABASE_URL 	= os.environ.get('DATABASE_URL') or 'mysql'
-DATABASE_NAME 	= os.environ.get('DATABASE_NAME') or 'alfr3d'
-DATABASE_USER 	= os.environ.get('DATABASE_USER') or 'alfr3d'
-DATABASE_PSWD 	= os.environ.get('DATABASE_PSWD') or 'alfr3d'
+MYSQL_DATABASE_URL 	= os.environ.get('MYSQL_DATABASE_URL') or 'mysql'
+MYSQL_DATABASE 	= os.environ.get('MYSQL_DATABASE') or 'alfr3d'
+MYSQL_USER 	= os.environ.get('MYSQL_USER') or 'alfr3d'
+MYSQL_PASSWORD 	= os.environ.get('MYSQL_PASSWORD') or 'alfr3d'
 KAFKA_URL       = os.environ['KAFKA_BOOTSTRAP_SERVERS']
 ENV_NAME        = os.environ.get('ALFR3D_ENV_NAME')
 
@@ -64,7 +64,7 @@ def checkRoutines():
 
 	# fetch available Routines
 	try:
-		db = MySQLdb.connect(host=DATABASE_URL, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+		db = MySQLdb.connect(host=MYSQL_DATABASE_URL, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
 		cursor = db.cursor()
 	except Exception as e:
 		logger.error("Failed to connect to database")
@@ -131,7 +131,7 @@ def resetRoutines():
 		return False
 
 	try:
-		db = MySQLdb.connect(host=DATABASE_URL, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+		db = MySQLdb.connect(host=MYSQL_DATABASE_URL, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
 		cursor = db.cursor()
 	except Exception as e:
 		logger.error("Failed to connect to database")
@@ -180,7 +180,7 @@ def checkMute():
 		return False
 
 	try:
-		db = MySQLdb.connect(host=DATABASE_URL, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+		db = MySQLdb.connect(host=MYSQL_DATABASE_URL, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
 		cursor = db.cursor()
 	except Exception as e:
 		logger.error("Failed to connect to database")

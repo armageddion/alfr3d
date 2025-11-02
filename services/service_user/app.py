@@ -21,10 +21,10 @@ handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-DATABASE_URL     = os.environ['DATABASE_URL']
-DATABASE_NAME     = os.environ['DATABASE_NAME']
-DATABASE_USER     = os.environ['DATABASE_USER']
-DATABASE_PSWD     = os.environ['DATABASE_PSWD']
+MYSQL_DATABASE_URL     = os.environ['MYSQL_DATABASE_URL']
+MYSQL_DATABASE     = os.environ['MYSQL_DATABASE']
+MYSQL_USER     = os.environ['MYSQL_USER']
+MYSQL_PASSWORD     = os.environ['MYSQL_PASSWORD']
 KAFKA_URL         = os.environ['KAFKA_BOOTSTRAP_SERVERS']
 ALFR3D_ENV_NAME   = os.environ.get('ALFR3D_ENV_NAME', 'test')
 
@@ -49,7 +49,7 @@ class User:
 
     def create(self):
         logger.info("Creating a new user")
-        db = pymysql.connect(host=DATABASE_URL, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+        db = pymysql.connect(host=MYSQL_DATABASE_URL, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
         cursor = db.cursor()
         cursor.execute("SELECT * from user WHERE username = %s", (self.name,))
         data = cursor.fetchone()
@@ -91,7 +91,7 @@ class User:
                 Find a user from DB by name
         """
         logger.info("Looking for user: " + self.name)
-        db = pymysql.connect(host=DATABASE_URL, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+        db = pymysql.connect(host=MYSQL_DATABASE_URL, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
         cursor = db.cursor()
         cursor.execute("SELECT * from user WHERE username = %s", (self.name,))
         data = cursor.fetchone()
@@ -116,7 +116,7 @@ class User:
                 Update a User in DB
         """
         logger.info("Updating user: " + self.name)
-        db = pymysql.connect(host=DATABASE_URL, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+        db = pymysql.connect(host=MYSQL_DATABASE_URL, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
         cursor = db.cursor()
         cursor.execute("SELECT * from user WHERE username = %s", (self.name,))
         data = cursor.fetchone()
@@ -159,7 +159,7 @@ class User:
                 Delete a User from DB
         """
         logger.info("Deleting a User")
-        db = pymysql.connect(host=DATABASE_URL, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+        db = pymysql.connect(host=MYSQL_DATABASE_URL, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
         cursor = db.cursor()
         cursor.execute("SELECT * from user WHERE username = \""+self.name+"\";")
         data = cursor.fetchone()
@@ -189,7 +189,7 @@ class User:
 def refreshAll():
     logger.info("Refreshing users")
 
-    db = pymysql.connect(host=DATABASE_URL, user=DATABASE_USER, password=DATABASE_PSWD, database=DATABASE_NAME)
+    db = pymysql.connect(host=MYSQL_DATABASE_URL, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
     cursor = db.cursor()
     cursor.execute("SELECT * from user;")
     user_data = cursor.fetchall()
@@ -264,7 +264,7 @@ def refreshAll():
                 producer.send("speak", bytes(user[1]+" just came online",'utf-8')) ## temp until greeting                
                 cursor.execute("UPDATE user SET state = "+str(stat['online'])+" WHERE username = \""+user[1]+"\";")                
                 # welcome the user
-                cursor.execute("SELECT * FROM alfr3d.user_types where id = \""+str(user[8])+"\";")
+                cursor.execute("SELECT * FROM user_types where id = %s", (user[8],))
                 usr_type = cursor.fetchone()
                 #print(usr_type) # DEBUG
                 data = {

@@ -13,7 +13,7 @@ def kafka_bootstrap_servers():
 def mysql_config():
     return {
         "host": "localhost",  # Use localhost for tests outside docker
-        "user": os.getenv("DATABASE_USER", "root"),
-        "password": os.getenv("DATABASE_PSWD", "rootpassword"),
-        "database": os.getenv("DATABASE_NAME", "alfr3d_db"),
+        "user": os.getenv("MYSQL_USER", "root"),
+        "password": os.getenv("MYSQL_PASSWORD", "rootpassword"),
+        "database": os.getenv("MYSQL_DATABASE", "alfr3d_db"),
     }
