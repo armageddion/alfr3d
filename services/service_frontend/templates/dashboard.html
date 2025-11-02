@@ -15,8 +15,8 @@
         <div class="page">
             <h2 class="page-title">ALFR3D: Container Dashboard</h2>
             <div class="canvas">
-                <!-- Container nodes will be dynamically added here -->
-                <div class="node-card" id="daemon-card" style="left: 80px; top: 40px; width: 240px; height: 120px;">
+                 <!-- Container nodes will be dynamically added here -->
+                 <div class="node-card" id="daemon-card" style="width: 240px; height: 120px;">
                     <div class="node-title">daemon</div>
                     <div class="node-health" id="daemon-health" style="background-color: #27ae60;"></div>
                     <div class="metrics-list">
@@ -41,7 +41,7 @@
                     </div>
                 </div>
 
-                <div class="node-card" id="environment-card" style="left: 400px; top: 40px; width: 240px; height: 120px;">
+                 <div class="node-card" id="environment-card" style="width: 240px; height: 120px;">
                     <div class="node-title">environment</div>
                     <div class="node-health" id="environment-health" style="background-color: #27ae60;"></div>
                     <div class="metrics-list">
@@ -66,7 +66,7 @@
                     </div>
                 </div>
 
-                <div class="node-card" id="frontend-card" style="left: 720px; top: 40px; width: 240px; height: 120px;">
+                 <div class="node-card" id="frontend-card" style="width: 240px; height: 120px;">
                     <div class="node-title">frontend</div>
                     <div class="node-health" id="frontend-health" style="background-color: #27ae60;"></div>
                     <div class="metrics-list">
@@ -91,7 +91,7 @@
                     </div>
                 </div>
 
-                <div class="node-card" id="device-card" style="left: 80px; top: 280px; width: 240px; height: 120px;">
+                 <div class="node-card" id="device-card" style="width: 240px; height: 120px;">
                     <div class="node-title">device</div>
                     <div class="node-health" id="device-health" style="background-color: #27ae60;"></div>
                     <div class="metrics-list">
@@ -116,7 +116,7 @@
                     </div>
                 </div>
 
-                <div class="node-card" id="mysql-card" style="left: 400px; top: 280px; width: 240px; height: 120px;">
+                 <div class="node-card" id="mysql-card" style="width: 240px; height: 120px;">
                     <div class="node-title">MySQL</div>
                     <div class="node-health" id="mysql-health" style="background-color: #27ae60;"></div>
                     <div class="metrics-list">
@@ -131,7 +131,7 @@
                     </div>
                 </div>
 
-                <div class="node-card" id="user-card" style="left: 720px; top: 280px; width: 240px; height: 120px;">
+                 <div class="node-card" id="user-card" style="width: 240px; height: 120px;">
                     <div class="node-title">user</div>
                     <div class="node-health" id="user-health" style="background-color: #27ae60;"></div>
                     <div class="metrics-list">
@@ -156,34 +156,16 @@
                     </div>
                 </div>
 
-                <!-- Animated Kafka topic connection lines -->
-                <svg class="connection-lines" width="100%" height="100%" viewBox="0 0 1000 650">
-                    <defs>
-                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" style="stop-color:#61dafb;stop-opacity:0.8" />
-                            <stop offset="50%" style="stop-color:#61dafb;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#61dafb;stop-opacity:0.8" />
-                        </linearGradient>
-                    </defs>
-
-                    <!-- speak: daemon -> environment (horizontal) -->
-                    <path d="M 200 100 L 520 100" class="connection-line speak-line" />
-
-                    <!-- google: daemon -> frontend (horizontal) -->
-                    <path d="M 200 100 L 840 100" class="connection-line google-line" />
-
-                    <!-- user: daemon -> user (horizontal then vertical) -->
-                    <path d="M 200 100 L 360 100 L 360 340 L 840 340" class="connection-line user-line" />
-
-                    <!-- device: frontend -> user (vertical then horizontal) -->
-                    <path d="M 840 100 L 840 220 L 720 220 L 720 340 L 840 340" class="connection-line device-line" />
-
-                    <!-- device_daemon: frontend -> daemon (horizontal) -->
-                    <path d="M 840 100 L 200 100" class="connection-line device-daemon-line" />
-
-                    <!-- environment: environment -> daemon (horizontal) -->
-                    <path d="M 520 100 L 200 100" class="connection-line environment-line" />
-                </svg>
+                 <!-- Animated Kafka topic connection lines -->
+                 <svg class="connection-lines" width="100%" height="100%" viewBox="0 0 1000 750">
+                     <defs>
+                         <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                             <stop offset="0%" style="stop-color:#61dafb;stop-opacity:0.8" />
+                             <stop offset="50%" style="stop-color:#61dafb;stop-opacity:1" />
+                             <stop offset="100%" style="stop-color:#61dafb;stop-opacity:0.8" />
+                         </linearGradient>
+                     </defs>
+                 </svg>
             </div>
             <div class="legend">
                 <span>Legend:</span>
@@ -191,10 +173,77 @@
                 <span class="legend-pill warn"></span> <span>Warning</span>
                 <span class="legend-pill down"></span> <span>Down</span>
             </div>
+            <div class="kafka-legend">
+                <span>Kafka Connections:</span>
+                <span class="kafka-legend-item"><span class="kafka-line-sample speak-line"></span> speak</span>
+                <span class="kafka-legend-item"><span class="kafka-line-sample google-line"></span> google</span>
+                <span class="kafka-legend-item"><span class="kafka-line-sample user-line"></span> user</span>
+                <span class="kafka-legend-item"><span class="kafka-line-sample frontend-user-line"></span> frontend-user</span>
+                <span class="kafka-legend-item"><span class="kafka-line-sample device-line"></span> device</span>
+                <span class="kafka-legend-item"><span class="kafka-line-sample device-user-line"></span> device-user</span>
+                <span class="kafka-legend-item"><span class="kafka-line-sample device-daemon-line"></span> device_daemon</span>
+                <span class="kafka-legend-item"><span class="kafka-line-sample environment-line"></span> environment</span>
+            </div>
         </div>
     </div>
 
-    <script>
+     <script>
+        const services = ['daemon', 'environment', 'frontend', 'device', 'mysql', 'user'];
+        const connections = [
+            {from: 'daemon', to: 'environment', class: 'speak-line'},
+            {from: 'daemon', to: 'frontend', class: 'google-line'},
+            {from: 'daemon', to: 'user', class: 'user-line'},
+            {from: 'frontend', to: 'user', class: 'frontend-user-line'},
+            {from: 'frontend', to: 'daemon', class: 'device-daemon-line'},
+            {from: 'environment', to: 'daemon', class: 'environment-line'},
+            {from: 'daemon', to: 'device', class: 'device-line'},
+            {from: 'device', to: 'user', class: 'device-user-line'}
+        ];
+
+        function positionContainers() {
+            const canvas = document.querySelector('.canvas');
+            const centerX = 500;
+            const centerY = 375;
+            const radius = 300;
+            const cardWidth = 240;
+            const cardHeight = 120;
+            const angleStep = (2 * Math.PI) / services.length;
+            let positions = {};
+
+            services.forEach((service, i) => {
+                const angle = i * angleStep - Math.PI / 2; // start from top
+                const x = centerX + radius * Math.cos(angle) - cardWidth / 2;
+                const y = centerY + radius * Math.sin(angle) - cardHeight / 2;
+                positions[service] = {x, y};
+                const card = document.getElementById(`${service}-card`);
+                card.style.left = `${x}px`;
+                card.style.top = `${y}px`;
+            });
+
+            // Draw lines
+            const svg = document.querySelector('.connection-lines');
+            svg.innerHTML = `<defs>
+                <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#61dafb;stop-opacity:0.8" />
+                    <stop offset="50%" style="stop-color:#61dafb;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#61dafb;stop-opacity:0.8" />
+                </linearGradient>
+            </defs>`;
+
+            connections.forEach(conn => {
+                const fromPos = positions[conn.from];
+                const toPos = positions[conn.to];
+                const fromX = fromPos.x + cardWidth / 2;
+                const fromY = fromPos.y + cardHeight / 2;
+                const toX = toPos.x + cardWidth / 2;
+                const toY = toPos.y + cardHeight / 2;
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', `M ${fromX} ${fromY} L ${toX} ${toY}`);
+                path.classList.add('connection-line', conn.class);
+                svg.appendChild(path);
+            });
+        }
+
         function updateDashboard() {
             fetch('/dashboard/data')
                 .then(response => response.json())
@@ -287,6 +336,9 @@
                 }
             }
         }
+
+        // Position containers and draw lines
+        positionContainers();
 
         // Update dashboard immediately and then every 5 seconds
         updateDashboard();

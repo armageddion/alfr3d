@@ -120,22 +120,22 @@
 
         <div class="section">
             <h2>Environment</h2>
-            <table>
-                <tr><th>ID</th><th>Name</th><th>City</th><th>Country</th><th>Latitude</th><th>Longitude</th></tr>
-                {% for env in environments %}
-                <tr>
-                    <td>{{ env[0] }}</td>
-                    <td class="actions">
-                        <form action="/environment/edit" method="post" class="form-inline">
-                            <input type="hidden" name="id" value="{{ env[0] }}">
-                            <input type="text" name="name" value="{{ env[1] }}" required>
-                            <button type="submit">Save</button>
-                        </form>
-                    </td>
-                    <td>{{ env[2] }}</td><td>{{ env[3] }}</td><td>{{ env[4] }}</td><td>{{ env[5] }}</td>
-                </tr>
-                {% endfor %}
-            </table>
+             <table>
+                 <tr><th>ID</th><th>Name</th><th>City</th><th>Country</th><th>Latitude</th><th>Longitude</th><th>Low</th><th>High</th><th>Description</th><th>Sunrise</th><th>Sunset</th></tr>
+                 {% for env in environments %}
+                 <tr>
+                     <td>{{ env[0] }}</td>
+                     <td class="actions">
+                         <form action="/environment/edit" method="post" class="form-inline">
+                             <input type="hidden" name="id" value="{{ env[0] }}">
+                             <input type="text" name="name" value="{{ env[1] }}" required>
+                             <button type="submit">Save</button>
+                         </form>
+                     </td>
+                     <td>{{ env[2] }}</td><td>{{ env[3] }}</td><td>{{ env[4] }}</td><td>{{ env[5] }}</td><td>{{ env[6] }}</td><td>{{ env[7] }}</td><td>{{ env[8] }}</td><td>{{ env[9] }}</td><td>{{ env[10] }}</td>
+                 </tr>
+                 {% endfor %}
+             </table>
         </div>
 
         <div class="section">

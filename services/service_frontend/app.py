@@ -239,7 +239,7 @@ def control():
     devices = cursor.fetchall()
 
     # Environment
-    cursor.execute("SELECT id, name, city, country, latitude, longitude FROM environment")
+    cursor.execute("SELECT id, name, city, country, latitude, longitude, low, high, description, sunrise, sunset FROM environment")
     environments = cursor.fetchall()
 
     # Users list for dropdown

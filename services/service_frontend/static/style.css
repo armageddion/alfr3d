@@ -12,7 +12,7 @@ body { background: var(--bg); color: var(--white); font-family: Inter, Roboto, A
 .page { padding: 18px; max-width: 1200px; margin: 0 auto; }
 .page-title { margin: 6px 0 16px 0; color: var(--primary); font-weight:700; }
 
-.canvas { position: relative; width: 1000px; height: 650px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.03); overflow: visible; margin: 0 auto; }
+.canvas { position: relative; width: 1000px; height: 750px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.03); overflow: visible; margin: 0 auto; }
 
 .node-card {
   position: absolute;
@@ -44,6 +44,18 @@ body { background: var(--bg); color: var(--white); font-family: Inter, Roboto, A
 .legend-pill.warn { background: var(--warn); }
 .legend-pill.down { background: var(--bad); }
 
+.kafka-legend { margin-top: 12px; display:flex; gap:12px; align-items:center; color:var(--muted); flex-wrap: wrap; }
+.kafka-legend-item { display:flex; align-items:center; gap:4px; }
+.kafka-line-sample { width: 20px; height: 2px; background: #61dafb; }
+.kafka-line-sample.speak-line { background: #ff6b6b; }
+.kafka-line-sample.google-line { background: #4ecdc4; }
+.kafka-line-sample.user-line { background: #45b7d1; }
+.kafka-line-sample.frontend-user-line { background: #9b59b6; }
+.kafka-line-sample.device-daemon-line { background: #f0932b; }
+.kafka-line-sample.environment-line { background: #eb4d4b; }
+.kafka-line-sample.device-line { background: #f9ca24; }
+.kafka-line-sample.device-user-line { background: #e91e63; }
+
 .connection-lines {
   position: absolute;
   top: 0;
@@ -56,7 +68,6 @@ body { background: var(--bg); color: var(--white); font-family: Inter, Roboto, A
 
 .connection-line {
   fill: none;
-  stroke: url(#grad1);
   stroke-width: 3;
   stroke-dasharray: 10 6;
   animation: dashmove 2s linear infinite;
@@ -64,12 +75,14 @@ body { background: var(--bg); color: var(--white); font-family: Inter, Roboto, A
   opacity: 0.9;
 }
 
-.connection-line.speak-line { animation-delay: 0s; }
-.connection-line.google-line { animation-delay: 0.3s; }
-.connection-line.user-line { animation-delay: 0.6s; }
-.connection-line.device-line { animation-delay: 0.9s; }
-.connection-line.device-daemon-line { animation-delay: 1.2s; }
-.connection-line.environment-line { animation-delay: 1.5s; }
+.connection-line.speak-line { stroke: #ff6b6b; animation-delay: 0s; }
+.connection-line.google-line { stroke: #4ecdc4; animation-delay: 0.3s; }
+.connection-line.user-line { stroke: #45b7d1; animation-delay: 0.6s; }
+.connection-line.frontend-user-line { stroke: #9b59b6; animation-delay: 0.9s; }
+.connection-line.device-daemon-line { stroke: #f0932b; animation-delay: 1.2s; }
+.connection-line.environment-line { stroke: #eb4d4b; animation-delay: 1.5s; }
+.connection-line.device-line { stroke: #f9ca24; animation-delay: 1.8s; }
+.connection-line.device-user-line { stroke: #e91e63; animation-delay: 2.1s; }
 
 @keyframes dashmove {
   0% { stroke-dashoffset: 0; }
