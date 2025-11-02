@@ -2,6 +2,7 @@ import pytest
 import pymysql
 from confluent_kafka import Producer
 import time
+import json
 
 def test_user_service_create_user(kafka_bootstrap_servers, mysql_config):
     """Test creating a user by sending Kafka message to user topic."""
@@ -81,3 +82,36 @@ def test_user_service_delete_user(kafka_bootstrap_servers, mysql_config):
     conn.close()
 
     assert user is None, "User not deleted"
+
+
+def test_user_service_frontend_integration(frontend_client, mysql_config):
+    """Test user service integration with frontend dashboard."""
+    # Test that frontend can retrieve user data
+    response = frontend_client.get('/dashboard/data')
+    assert response.status_code == 200
+
+    data = json.loads(response.data)
+    assert 'user' in data
+    assert 'status' in data['user']
+
+    # Test users page loads
+    response = frontend_client.get('/users')
+    assert response.status_code == 200
+    assert b'Users' in response.data
+
+    # Test user creation via frontend
+    response = frontend_client.post('/user/add', data={
+        'username': 'frontend_test_user',
+        'email': 'frontend@test.com',
+        'type': 'guest'
+    })
+    # Should redirect on success
+    assert response.status_code in [200, 302]
+
+    # Clean up test user
+    conn = pymysql.connect(**mysql_config)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM user WHERE username = %s", ('frontend_test_user',))
+    conn.commit()
+    cursor.close()
+    conn.close()

@@ -1,5 +1,6 @@
 import pytest
 import sys
+import json
 sys.path.append('../services/service_environment')
 from unittest.mock import patch, MagicMock
 import environment as env
@@ -55,3 +56,24 @@ def test_checkWeather(mock_connect, mock_weather):
 
     # Assert weather_util.getWeather was called with lat/long
     mock_weather.assert_called_with(10.0, 20.0)
+
+
+def test_environment_service_frontend_integration(frontend_client):
+    """Test environment service integration with frontend dashboard."""
+    # Test that frontend can retrieve environment data
+    response = frontend_client.get('/dashboard/data')
+    assert response.status_code == 200
+
+    data = json.loads(response.data)
+    assert 'environment' in data
+    assert 'status' in data['environment']
+
+    # Test environment page loads
+    response = frontend_client.get('/environment')
+    assert response.status_code == 200
+    assert b'Environment' in response.data
+
+    # Test command sending to environment service
+    response = frontend_client.post('/command', data={'command': 'check_location'})
+    assert response.status_code == 200
+    assert b'Command sent' in response.data

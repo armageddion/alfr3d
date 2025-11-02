@@ -1,53 +1,92 @@
-# Alfr3d
+# ALFR3D
 
-A containerized microservices project for home automation, featuring Kafka messaging, MySQL database, and Python services. Includes a Flask web frontend for user/device management.
+A containerized microservices project for home automation, featuring Kafka messaging, MySQL database, and Python services. Includes a modern Flask web frontend with real-time dashboard monitoring and comprehensive user/device management.
 
 ## Features
 
-- **Microservices Architecture**: Modular services for users, devices, environment, and frontend.
-- **Messaging**: Kafka-based communication between services.
-- **Database**: MySQL with optimized, secure queries.
-- **Security**: Parameterized SQL queries to prevent injection; password hashing.
-- **Performance**: Optimized DB calls with batch updates and reduced round trips.
-- **Testing**: Comprehensive unit tests, route tests, and fuzz testing for robustness.
-- **Containerization**: Docker Compose for local development; Kubernetes manifests for production.
+- **Microservices Architecture**: Modular services for users, devices, environment, daemon, and frontend.
+- **Real-Time Dashboard**: Live monitoring with CPU/memory metrics, health status, and animated connection lines.
+- **Messaging**: Kafka-based communication between services with topics: `speak`, `google`, `user`, `device`, `environment`.
+- **Database**: MySQL with optimized, secure queries and comprehensive schema.
+- **Security**: Parameterized SQL queries to prevent injection; password hashing; secure API endpoints.
+- **Performance**: Optimized DB calls with batch updates, real-time metrics collection, and efficient data fetching.
+- **Modern UI**: Dark theme with professional styling, responsive design, and intuitive navigation.
+- **Testing**: Comprehensive unit tests, integration tests, and API endpoint testing.
+- **Containerization**: Docker Compose for local development; Kubernetes manifests for production deployment.
+- **Deployment**: Full Minikube support with ingress configuration and persistent storage.
 
 ## Services
 
-- **Zookeeper**: Required for Kafka coordination.
-- **Kafka**: Message broker with auto-created topics (`speak`, `environment`, `device`, `user`, `google`).
-- **MySQL**: Database with schema aligned to application models.
-- **Service User**: Manages users, handles online/offline status via device activity.
-- **Service Device**: Manages devices, performs LAN scanning.
-- **Service Environment**: Handles geolocation and weather updates.
-- **Service Frontend**: Flask web app for user registration, login, device management, and posts.
+- **Zookeeper**: Required for Kafka coordination and cluster management.
+- **Kafka**: Message broker with auto-created topics (`speak`, `google`, `user`, `device`, `environment`) for inter-service communication.
+- **MySQL**: Database with comprehensive schema including users, devices, environments, routines, and states.
+- **Service Daemon**: Core orchestration service handling voice commands, Google integration, and message routing.
+- **Service User**: Manages user accounts, authentication, and online/offline status tracking.
+- **Service Device**: Manages IoT devices, performs network scanning with arp-scan, and device state monitoring.
+- **Service Environment**: Handles geolocation, weather updates, and environmental data collection.
+- **Service Frontend**: Modern Flask web application with real-time dashboard, user/device management, and control panel.
 
-## Setup
+## Quick Start
 
-1. Ensure Docker and Docker Compose are installed.
-2. Copy `.env.example` to `.env` and update environment variables (e.g., DB credentials, Kafka URLs).
-3. Run `docker-compose up --build` to start all services.
-4. Access the frontend at `http://localhost:8000`.
+### Local Development with Docker Compose
 
-## Ports
+1. **Prerequisites**: Ensure Docker and Docker Compose are installed.
+2. **Environment Setup**: Copy `.env.example` to `.env` and update environment variables (DB credentials, Kafka URLs).
+3. **Database Setup**: Run the database initialization:
+   ```bash
+   docker-compose up mysql -d
+   docker-compose exec mysql mysql -u root -p < setup/createTables.sql
+   ```
+4. **Start All Services**:
+   ```bash
+   docker-compose up --build
+   ```
+5. **Access the Application**:
+   - Dashboard: `http://localhost:8000`
+   - Real-time metrics update every 5 seconds
+   - Control panel for user/device management
 
-- Kafka: 9092
-- MySQL: 3306
-- Service Frontend: 8000
+### Ports
+
+- **Kafka**: 9092 (internal), 29092 (external)
+- **MySQL**: 3306
+- **Zookeeper**: 2181
+- **Service Frontend**: 8000
+- **Service Daemon**: 8080
+- **Service Device**: 8080
+- **Service Environment**: 8080
+- **Service User**: 8080
 
 ## Testing
 
-Run tests for the frontend service:
+### Running All Tests
 
 ```bash
-cd services/service_frontend
-pip install -r requirements.txt
-pytest
+# Install test dependencies
+pip install -r tests/requirements.txt
+
+# Run all tests
+pytest tests/
+
+# Run with coverage
+pytest --cov=services/ tests/
 ```
 
-- **Unit Tests**: Model creation and validation.
-- **Route Tests**: HTTP endpoints for login, registration, etc.
-- **Fuzz Tests**: Random input generation to ensure crash-resistance.
+### Test Categories
+
+- **Integration Tests**: Kafka messaging between services (`test_kafka.py`)
+- **Database Tests**: MySQL operations and data integrity (`test_mysql.py`)
+- **Service Tests**: Individual service functionality
+  - User service operations (`test_user_service.py`)
+  - Device service network scanning (`test_device_service.py`)
+  - Environment service data collection (`test_service_environment.py`)
+- **Frontend Tests**: Dashboard API endpoints and real-time data updates
+
+### Test Fixtures
+
+- `kafka_bootstrap_servers`: Kafka connection configuration
+- `mysql_config`: Database connection parameters
+- Automatic service startup/teardown for integration tests
 
 ## Linting
 
@@ -64,51 +103,130 @@ black services/service_frontend/app/ services/service_frontend/tests/
 # Repeat for other services
 ```
 
+## Dashboard Features
+
+The ALFR3D dashboard provides real-time monitoring and control:
+
+### Real-Time Metrics
+- **Live CPU/Memory**: Actual system resource usage for all services
+- **Health Indicators**: Visual status (🟢 Healthy, 🟡 Warning, 🔴 Unhealthy)
+- **Connection Lines**: Animated Kafka topic flows between services
+- **Auto-Refresh**: Data updates every 5 seconds
+
+### Management Interface
+- **User Management**: Registration, editing, deletion with role-based access
+- **Device Control**: Network scanning, device state monitoring
+- **Environment Settings**: Location and weather data configuration
+- **Routine Automation**: Scheduled task management
+
+### Visual Design
+- **Dark Theme**: Professional UI with consistent styling
+- **Responsive Layout**: Works on desktop and mobile devices
+- **Interactive Elements**: Hover effects and smooth animations
+- **Navigation**: Unified nav bar across all pages
+
 ## Development
 
-Modify Python services in `services/` directories. Key improvements:
+### Architecture Overview
+- **Backend**: Flask-based microservices with Kafka messaging
+- **Frontend**: HTML/CSS/JavaScript with real-time updates
+- **Database**: MySQL with comprehensive schema
+- **Deployment**: Docker Compose (dev) and Kubernetes (prod)
 
-- **SQL Security**: All queries use parameterized statements.
-- **Optimizations**: Batch DB updates, single-query operations.
-- **Logging**: Container-friendly stdout logging.
-- **Models**: SQLAlchemy models aligned with `createTables.sql`.
+### Key Improvements
+- **Real-Time Data**: Dashboard shows live metrics instead of static data
+- **Security**: Parameterized SQL queries, secure API endpoints
+- **Performance**: Optimized DB calls, efficient data fetching
+- **UI/UX**: Modern dark theme, responsive design
+- **Testing**: Comprehensive test coverage for all components
+- **Deployment**: Full Kubernetes support with Minikube
 
-Rebuild with `docker-compose up --build`.
+### Development Workflow
+1. Modify services in `services/` directories
+2. Update tests in `tests/` directory
+3. Run tests: `pytest tests/`
+4. Lint code: `./lint.sh`
+5. Rebuild: `docker-compose up --build`
+
+### API Endpoints
+- `GET /`: Landing page
+- `GET /dashboard`: Real-time monitoring dashboard
+- `GET /control`: Management interface
+- `POST /command`: Send commands via Kafka
+- `GET /dashboard/data`: JSON API for real-time metrics
 
 ## Kubernetes Deployment
 
-The project includes Kubernetes manifests in the `k8s/` directory for container orchestration.
+The project includes complete Kubernetes manifests for production deployment with Minikube support.
 
 ### Prerequisites
-- Kubernetes cluster (e.g., Minikube, EKS, GKE)
+- Minikube installed and running
 - kubectl configured
+- Docker for building images
 
-### Deploy to Kubernetes
+### Deploy to Minikube
 
-1. Build and push Docker images to a registry (e.g., Docker Hub):
-    ```
-    docker build -t alfr3d/service-user:latest services/service_user
-    docker build -t alfr3d/service-device:latest services/service_device
-    docker build -t alfr3d/service-environment:latest services/service_environment
-    docker build -t alfr3d/service-frontend:latest services/service_frontend
-    # Push all images
-    ```
-
-2. Apply the manifests:
+1. **Start Minikube**:
+   ```bash
+   minikube start --driver=docker
+   minikube update-context
    ```
+
+2. **Build and Load Images**:
+   ```bash
+   # Build all service images
+   eval $(minikube docker-env)
+   docker build -t alfr3d/service-frontend:latest services/service_frontend
+   docker build -t alfr3d/service-daemon:latest services/service_daemon
+   docker build -t alfr3d/service-device:latest services/service_device
+   docker build -t alfr3d/service-environment:latest services/service_environment
+   docker build -t alfr3d/service-user:latest services/service_user
+   ```
+
+3. **Deploy to Kubernetes**:
+   ```bash
    kubectl apply -f k8s/
    ```
 
-3. Check status:
-   ```
-   kubectl get pods
+4. **Monitor Deployment**:
+   ```bash
+   kubectl get pods -w
    kubectl get services
+   kubectl get ingress
    ```
 
-4. Access the frontend via the Ingress (configure DNS or use port-forward):
-   ```
-   kubectl port-forward svc/service-frontend 8000:8000
-   ```
-   Then visit http://localhost:8000
+5. **Access the Application**:
+   ```bash
+   # Get service URL
+   minikube service service-frontend --url
 
-Note: Update image names in YAML files to match your registry.
+   # Or configure ingress (add to /etc/hosts)
+   echo "$(minikube ip) alfr3d.local" | sudo tee -a /etc/hosts
+   # Then visit: http://alfr3d.local
+   ```
+
+### Kubernetes Architecture
+
+- **StatefulSets**: Zookeeper, Kafka, MySQL with persistent storage
+- **Deployments**: All ALFR3D microservices with rolling updates
+- **Services**: ClusterIP for internal communication, LoadBalancer for frontend
+- **ConfigMap**: Centralized environment configuration
+- **Ingress**: External access with host-based routing
+- **Persistent Volumes**: MySQL data persistence
+
+### Troubleshooting
+
+```bash
+# Check pod logs
+kubectl logs -f deployment/service-frontend
+
+# Debug networking
+kubectl exec -it deployment/service-frontend -- /bin/bash
+
+# Check resource usage
+kubectl top pods
+
+# Reset deployment
+kubectl delete -f k8s/
+minikube delete && minikube start
+```

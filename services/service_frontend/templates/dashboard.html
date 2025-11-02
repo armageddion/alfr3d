@@ -16,142 +16,142 @@
             <h2 class="page-title">ALFR3D: Container Dashboard</h2>
             <div class="canvas">
                 <!-- Container nodes will be dynamically added here -->
-                <div class="node-card" style="left: 80px; top: 40px; width: 240px; height: 120px;">
+                <div class="node-card" id="daemon-card" style="left: 80px; top: 40px; width: 240px; height: 120px;">
                     <div class="node-title">daemon</div>
-                    <div class="node-health" style="background-color: #27ae60;"></div>
+                    <div class="node-health" id="daemon-health" style="background-color: #27ae60;"></div>
                     <div class="metrics-list">
                         <div class="metric-row">
                             <div class="metric-name">CPU</div>
                             <div class="metric-bar-bg">
-                                <div class="metric-bar-fill" style="width: 25%;"></div>
+                                <div class="metric-bar-fill" id="daemon-cpu-bar" style="width: 25%;"></div>
                             </div>
-                            <div class="metric-value">25%</div>
+                            <div class="metric-value" id="daemon-cpu-value">25%</div>
                         </div>
                         <div class="metric-row">
                             <div class="metric-name">MEM</div>
                             <div class="metric-bar-bg">
-                                <div class="metric-bar-fill" style="width: 40%;"></div>
+                                <div class="metric-bar-fill" id="daemon-mem-bar" style="width: 40%;"></div>
                             </div>
-                            <div class="metric-value">40%</div>
+                            <div class="metric-value" id="daemon-mem-value">40%</div>
                         </div>
                         <div class="metric-row">
                             <div class="metric-name">ERR</div>
-                            <div class="metric-pill">0</div>
+                            <div class="metric-pill" id="daemon-errors">0</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="node-card" style="left: 400px; top: 40px; width: 240px; height: 120px;">
+                <div class="node-card" id="environment-card" style="left: 400px; top: 40px; width: 240px; height: 120px;">
                     <div class="node-title">environment</div>
-                    <div class="node-health" style="background-color: #27ae60;"></div>
+                    <div class="node-health" id="environment-health" style="background-color: #27ae60;"></div>
                     <div class="metrics-list">
                         <div class="metric-row">
                             <div class="metric-name">CPU</div>
                             <div class="metric-bar-bg">
-                                <div class="metric-bar-fill" style="width: 15%;"></div>
+                                <div class="metric-bar-fill" id="environment-cpu-bar" style="width: 15%;"></div>
                             </div>
-                            <div class="metric-value">15%</div>
+                            <div class="metric-value" id="environment-cpu-value">15%</div>
                         </div>
                         <div class="metric-row">
                             <div class="metric-name">MEM</div>
                             <div class="metric-bar-bg">
-                                <div class="metric-bar-fill" style="width: 30%;"></div>
+                                <div class="metric-bar-fill" id="environment-mem-bar" style="width: 30%;"></div>
                             </div>
-                            <div class="metric-value">30%</div>
+                            <div class="metric-value" id="environment-mem-value">30%</div>
                         </div>
                         <div class="metric-row">
                             <div class="metric-name">ERR</div>
-                            <div class="metric-pill">0</div>
+                            <div class="metric-pill" id="environment-errors">0</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="node-card" style="left: 720px; top: 40px; width: 240px; height: 120px;">
+                <div class="node-card" id="frontend-card" style="left: 720px; top: 40px; width: 240px; height: 120px;">
                     <div class="node-title">frontend</div>
-                    <div class="node-health" style="background-color: #27ae60;"></div>
+                    <div class="node-health" id="frontend-health" style="background-color: #27ae60;"></div>
                     <div class="metrics-list">
                         <div class="metric-row">
                             <div class="metric-name">CPU</div>
                             <div class="metric-bar-bg">
-                                <div class="metric-bar-fill" style="width: 35%;"></div>
+                                <div class="metric-bar-fill" id="frontend-cpu-bar" style="width: 35%;"></div>
                             </div>
-                            <div class="metric-value">35%</div>
+                            <div class="metric-value" id="frontend-cpu-value">35%</div>
                         </div>
                         <div class="metric-row">
                             <div class="metric-name">MEM</div>
                             <div class="metric-bar-bg">
-                                <div class="metric-bar-fill" style="width: 45%;"></div>
+                                <div class="metric-bar-fill" id="frontend-mem-bar" style="width: 45%;"></div>
                             </div>
-                            <div class="metric-value">45%</div>
+                            <div class="metric-value" id="frontend-mem-value">45%</div>
                         </div>
                         <div class="metric-row">
                             <div class="metric-name">ERR</div>
-                            <div class="metric-pill">0</div>
+                            <div class="metric-pill" id="frontend-errors">0</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="node-card" style="left: 80px; top: 280px; width: 240px; height: 120px;">
+                <div class="node-card" id="device-card" style="left: 80px; top: 280px; width: 240px; height: 120px;">
                     <div class="node-title">device</div>
-                    <div class="node-health" style="background-color: #27ae60;"></div>
+                    <div class="node-health" id="device-health" style="background-color: #27ae60;"></div>
                     <div class="metrics-list">
                         <div class="metric-row">
                             <div class="metric-name">CPU</div>
                             <div class="metric-bar-bg">
-                                <div class="metric-bar-fill" style="width: 20%;"></div>
+                                <div class="metric-bar-fill" id="device-cpu-bar" style="width: 20%;"></div>
                             </div>
-                            <div class="metric-value">20%</div>
+                            <div class="metric-value" id="device-cpu-value">20%</div>
                         </div>
                         <div class="metric-row">
                             <div class="metric-name">MEM</div>
                             <div class="metric-bar-bg">
-                                <div class="metric-bar-fill" style="width: 35%;"></div>
+                                <div class="metric-bar-fill" id="device-mem-bar" style="width: 35%;"></div>
                             </div>
-                            <div class="metric-value">35%</div>
+                            <div class="metric-value" id="device-mem-value">35%</div>
                         </div>
                         <div class="metric-row">
                             <div class="metric-name">ERR</div>
-                            <div class="metric-pill">0</div>
+                            <div class="metric-pill" id="device-errors">0</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="node-card" style="left: 400px; top: 280px; width: 240px; height: 120px;">
+                <div class="node-card" id="mysql-card" style="left: 400px; top: 280px; width: 240px; height: 120px;">
                     <div class="node-title">MySQL</div>
-                    <div class="node-health" style="background-color: #27ae60;"></div>
+                    <div class="node-health" id="mysql-health" style="background-color: #27ae60;"></div>
                     <div class="metrics-list">
                         <div class="metric-row">
                             <div class="metric-name">CONN</div>
-                            <div class="metric-pill">5</div>
+                            <div class="metric-pill" id="mysql-connections">5</div>
                         </div>
                         <div class="metric-row">
                             <div class="metric-name">TBL</div>
-                            <div class="metric-pill">8</div>
+                            <div class="metric-pill" id="mysql-tables">8</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="node-card" style="left: 720px; top: 280px; width: 240px; height: 120px;">
+                <div class="node-card" id="user-card" style="left: 720px; top: 280px; width: 240px; height: 120px;">
                     <div class="node-title">user</div>
-                    <div class="node-health" style="background-color: #27ae60;"></div>
+                    <div class="node-health" id="user-health" style="background-color: #27ae60;"></div>
                     <div class="metrics-list">
                         <div class="metric-row">
                             <div class="metric-name">CPU</div>
                             <div class="metric-bar-bg">
-                                <div class="metric-bar-fill" style="width: 18%;"></div>
+                                <div class="metric-bar-fill" id="user-cpu-bar" style="width: 18%;"></div>
                             </div>
-                            <div class="metric-value">18%</div>
+                            <div class="metric-value" id="user-cpu-value">18%</div>
                         </div>
                         <div class="metric-row">
                             <div class="metric-name">MEM</div>
                             <div class="metric-bar-bg">
-                                <div class="metric-bar-fill" style="width: 28%;"></div>
+                                <div class="metric-bar-fill" id="user-mem-bar" style="width: 28%;"></div>
                             </div>
-                            <div class="metric-value">28%</div>
+                            <div class="metric-value" id="user-mem-value">28%</div>
                         </div>
                         <div class="metric-row">
                             <div class="metric-name">ERR</div>
-                            <div class="metric-pill">0</div>
+                            <div class="metric-pill" id="user-errors">0</div>
                         </div>
                     </div>
                 </div>
@@ -195,10 +195,102 @@
     </div>
 
     <script>
-        // Simple auto-refresh for demo
-        setTimeout(function() {
-            location.reload();
-        }, 5000);
+        function updateDashboard() {
+            fetch('/dashboard/data')
+                .then(response => response.json())
+                .then(data => {
+                    // Update daemon metrics
+                    updateServiceMetrics('daemon', data.daemon);
+
+                    // Update environment metrics
+                    updateServiceMetrics('environment', data.environment);
+
+                    // Update frontend metrics (uses real system metrics)
+                    updateServiceMetrics('frontend', data.frontend);
+
+                    // Update device metrics
+                    updateServiceMetrics('device', data.device);
+
+                    // Update MySQL metrics
+                    updateMySQLMetrics(data.mysql);
+
+                    // Update user metrics
+                    updateServiceMetrics('user', data.user);
+                })
+                .catch(error => {
+                    console.error('Error fetching dashboard data:', error);
+                });
+        }
+
+        function updateServiceMetrics(serviceName, serviceData) {
+            // Update CPU
+            const cpuBar = document.getElementById(`${serviceName}-cpu-bar`);
+            const cpuValue = document.getElementById(`${serviceName}-cpu-value`);
+            if (cpuBar && cpuValue) {
+                const cpuPercent = Math.round(serviceData.cpu);
+                cpuBar.style.width = `${cpuPercent}%`;
+                cpuValue.textContent = `${cpuPercent}%`;
+            }
+
+            // Update Memory
+            const memBar = document.getElementById(`${serviceName}-mem-bar`);
+            const memValue = document.getElementById(`${serviceName}-mem-value`);
+            if (memBar && memValue) {
+                const memPercent = Math.round(serviceData.memory);
+                memBar.style.width = `${memPercent}%`;
+                memValue.textContent = `${memPercent}%`;
+            }
+
+            // Update Errors
+            const errors = document.getElementById(`${serviceName}-errors`);
+            if (errors) {
+                errors.textContent = serviceData.errors || 0;
+            }
+
+            // Update health indicator
+            const health = document.getElementById(`${serviceName}-health`);
+            if (health) {
+                const status = serviceData.status;
+                if (status === 'healthy') {
+                    health.style.backgroundColor = 'var(--good)';
+                } else if (status === 'warning') {
+                    health.style.backgroundColor = 'var(--warn)';
+                } else {
+                    health.style.backgroundColor = 'var(--bad)';
+                }
+            }
+        }
+
+        function updateMySQLMetrics(mysqlData) {
+            // Update connections
+            const connections = document.getElementById('mysql-connections');
+            if (connections) {
+                connections.textContent = mysqlData.connections || 0;
+            }
+
+            // Update tables (static for now, could be made dynamic)
+            const tables = document.getElementById('mysql-tables');
+            if (tables) {
+                tables.textContent = mysqlData.tables || 8;
+            }
+
+            // Update health indicator
+            const health = document.getElementById('mysql-health');
+            if (health) {
+                const status = mysqlData.status;
+                if (status === 'healthy') {
+                    health.style.backgroundColor = 'var(--good)';
+                } else if (status === 'warning') {
+                    health.style.backgroundColor = 'var(--warn)';
+                } else {
+                    health.style.backgroundColor = 'var(--bad)';
+                }
+            }
+        }
+
+        // Update dashboard immediately and then every 5 seconds
+        updateDashboard();
+        setInterval(updateDashboard, 5000);
     </script>
 </body>
 </html>
