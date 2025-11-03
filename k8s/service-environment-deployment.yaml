@@ -12,9 +12,10 @@ spec:
       labels:
         app: service-environment
     spec:
-      containers:
-      - name: service-environment
-        image: alfr3d/service-environment:latest
-        envFrom:
-        - configMapRef:
-            name: alfr3d-k8s-env
+       containers:
+       - name: service-environment
+         image: alfr3d/service-environment:latest
+         imagePullPolicy: Never
+         envFrom:
+         - configMapRef:
+             name: alfr3d-k8s-env

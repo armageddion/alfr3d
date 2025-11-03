@@ -19,6 +19,7 @@ spec:
       containers:
       - name: service-device
         image: alfr3d/service-device:latest
+        imagePullPolicy: Never
         envFrom:
         - configMapRef:
             name: alfr3d-k8s-env

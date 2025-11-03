@@ -19,6 +19,7 @@ spec:
       containers:
       - name: service-daemon
         image: alfr3d/service-daemon:latest
+        imagePullPolicy: Never
         envFrom:
         - configMapRef:
             name: alfr3d-k8s-env

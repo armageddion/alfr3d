@@ -12,11 +12,12 @@ spec:
       labels:
         app: service-frontend
     spec:
-      containers:
-      - name: service-frontend
-        image: alfr3d/service-frontend:latest
-        envFrom:
-        - configMapRef:
-            name: alfr3d-k8s-env
-        ports:
-        - containerPort: 8000
+       containers:
+       - name: service-frontend
+         image: alfr3d/service-frontend:latest
+         imagePullPolicy: Never
+         envFrom:
+         - configMapRef:
+             name: alfr3d-k8s-env
+         ports:
+         - containerPort: 8000
