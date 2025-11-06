@@ -13,13 +13,11 @@ body { background: var(--bg); color: var(--white); font-family: Inter, Roboto, A
 .page-title { margin: 6px 0 16px 0; color: var(--primary); font-weight:700; }
 
 .user-canvas { position: relative; width: 1000px; height: 200px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.03); overflow: visible; margin: 0 auto 20px auto; }
-.user-cluster { position: absolute; width: 400px; height: 160px; }
-#guests-cluster { left: 550px; top: 20px; }
-#residents-cluster { left: 50px; top: 20px; }
+.user-cluster { position: absolute; width: 900px; height: 160px; left: 50px; top: 20px; }
 .cluster-title { font-weight: 700; font-size: 16px; color: var(--primary); margin-bottom: 10px; }
 .user-card { position: absolute; background: linear-gradient(180deg, #141619, #0f1416); border-radius: 6px; border: 1px solid rgba(255,255,255,0.04); padding: 8px; width: 120px; height: 50px; box-shadow: 0 4px 16px rgba(0,0,0,0.5); color: var(--white); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transform: scale(0.8); transition: all 0.5s ease; }
 .user-card.show { opacity: 1; transform: scale(1); }
-.user-username { font-weight: 700; font-size: 12px; }
+.user-username { font-weight: 700; font-size: 16px; }
 .user-device { font-size: 10px; color: var(--muted); }
 .canvas { position: relative; width: 1000px; height: 750px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.03); overflow: visible; margin: 0 auto; }
 
@@ -93,6 +91,11 @@ body { background: var(--bg); color: var(--white); font-family: Inter, Roboto, A
 .connection-line.environment-line { stroke: #eb4d4b; animation-delay: 1.5s; }
 .connection-line.device-line { stroke: #f9ca24; animation-delay: 1.8s; }
 .connection-line.device-user-line { stroke: #e91e63; animation-delay: 2.1s; }
+.connection-line.mysql-daemon-line { stroke: #2ecc71; stroke-dasharray: 10 20; animation-delay: 2.4s; }
+.connection-line.mysql-device-line { stroke: #e67e22; stroke-dasharray: 10 20; animation-delay: 2.7s; }
+.connection-line.mysql-environment-line { stroke: #9b59b6; stroke-dasharray: 10 20; animation-delay: 3.0s; }
+.connection-line.mysql-user-line { stroke: #34495e; stroke-dasharray: 10 20; animation-delay: 3.3s; }
+.connection-line.mysql-frontend-line { stroke: #f39c12; stroke-dasharray: 10 20; animation-delay: 3.6s; }
 
 @keyframes dashmove {
   0% { stroke-dashoffset: 0; }

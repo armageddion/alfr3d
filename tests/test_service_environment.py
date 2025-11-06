@@ -5,11 +5,22 @@ sys.path.append('../services/service_environment')
 from unittest.mock import patch, MagicMock
 import environment as env
 
-@patch('services.service_environment.environment.urlopen')
-@patch('services.service_environment.environment.pymysql.connect')
-@patch('services.service_environment.environment.get_producer')
+@pytest.fixture
+def mock_urlopen(mocker):
+    return mocker.patch('services.service_environment.environment.urlopen')
+
+@pytest.fixture
+def mock_connect(mocker):
+    return mocker.patch('services.service_environment.environment.pymysql.connect')
+
+@pytest.fixture
+def mock_producer(mocker):
+    return mocker.patch('services.service_environment.environment.get_producer')
+
 def test_checkLocation(mock_producer, mock_connect, mock_urlopen):
     """Test checkLocation function with mocked DB and API calls."""
+    from unittest.mock import MagicMock
+    
     # Mock producer
     mock_prod = MagicMock()
     mock_producer.return_value = mock_prod

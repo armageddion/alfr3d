@@ -4,37 +4,16 @@ import time
 
 def test_device_service_scan_net(kafka_bootstrap_servers):
     """Test sending 'scan net' message to device topic and verify response."""
+    from conftest import wait_for_kafka_message
+    
     # Send scan net message
     producer = Producer({'bootstrap.servers': kafka_bootstrap_servers})
     producer.produce("device", value=b"scan net")
     producer.flush()
 
-    # Wait for processing
-    time.sleep(5)  # Give time for scan
-
-    # Check if it sends to user topic "refresh-all"
-    consumer = Consumer({
-        'bootstrap.servers': kafka_bootstrap_servers,
-        'group.id': 'test-device-group',
-        'auto.offset.reset': 'earliest'
-    })
-    consumer.subscribe(["user"])
-    messages = []
-    start_time = time.time()
-    while time.time() - start_time < 10:  # 10 seconds timeout
-        msg = consumer.poll(1.0)
-        if msg is None:
-            continue
-        if msg.error():
-            continue
-        messages.append(msg.value().decode('utf-8'))
-        if "refresh-all" in messages:
-            break
-    consumer.close()
-
-    # Note: This may not work if arp-scan doesn't find devices, but at least test sending
-    # For full test, assume it sends refresh-all
-    # assert "refresh-all" in messages, "refresh-all not sent to user topic"
+    # Wait for response on user topic
+    found = wait_for_kafka_message(kafka_bootstrap_servers, "user", "refresh-all", timeout=15)
+    assert found, "refresh-all not sent to user topic"
 
 
 def test_device_service_health_check(frontend_client):

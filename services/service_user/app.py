@@ -51,11 +51,9 @@ class User:
         logger.info("Creating a new user")
         db = pymysql.connect(host=MYSQL_DATABASE_URL, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
         cursor = db.cursor()
-        cursor.execute("SELECT * from user WHERE username = %s", (self.name,))
-        data = cursor.fetchone()
 
         try:
-            exists = self.get(self.name)
+            exists = self.get()
         except:
             exists = False
         if exists:
@@ -64,6 +62,10 @@ class User:
             return False
 
         logger.info("Creating a new DB entry for user: "+self.name)
+        # if last online is not set, set it to jan 1, 1970
+        if self.last_online is None:
+            self.last_online = datetime(1970,1,1)
+
         try:
             cursor.execute("SELECT * from states WHERE state = %s", ("offline",))
             usrstate = cursor.fetchone()[0]
@@ -209,7 +211,7 @@ def refreshAll():
         stat[state[1]]=state[0]
 
     # figure out environments
-    
+    env_id=None
     cursor.execute("SELECT * FROM environment WHERE name = %s", (ALFR3D_ENV_NAME,))
     env_data = cursor.fetchone()
     if env_data:
@@ -222,17 +224,21 @@ def refreshAll():
         logger.info(user)
         last_online=user[6]
 
+        if user[6] is None:
+            # if no last_online time is set, set it to jan 1, 1970
+            last_online = datetime(1970,1,1)
+
         # get all devices for that user
         try:
             logger.info("Fetching user devices")
             cursor.execute("SELECT d.last_online FROM device d \
-                              inner join device_types dt on d.device_type = dt.id \
+                            inner join device_types dt on d.device_type = dt.id \
                             WHERE user_id = "+str(user[0])+" \
                             AND (type = \"guest\" or type = \"resident\");")
             devices = cursor.fetchall()
             for device in devices:
                 # update last_online time for that user
-                if device[0] and user[6] and device[0] > user[6]:
+                if device[0] and (device[0] > last_online):
                     logger.info("Updating user "+user[1])
                     cursor.execute("UPDATE user SET last_online = \""+str(device[0])+"\" WHERE username = \""+user[1]+"\";")
                     cursor.execute("UPDATE user SET environment_id = \""+str(env_id)+"\" WHERE username = \""+user[1]+"\";")

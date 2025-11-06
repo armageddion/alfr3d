@@ -14,15 +14,12 @@
     <div id="dash-container">
         <div class="page">
             <h2 class="page-title">ALFR3D: Container Dashboard</h2>
-            <div class="user-canvas">
-                <div class="user-cluster" id="guests-cluster">
-                    <div class="cluster-title">Guests</div>
-                </div>
-                <div class="user-cluster" id="residents-cluster">
-                    <div class="cluster-title">Residents</div>
-                </div>
-            </div>
-            <div class="canvas">
+             <div class="user-canvas">
+                 <div class="user-cluster" id="users-cluster">
+                     <div class="cluster-title">Online Users</div>
+                 </div>
+             </div>
+             <div class="canvas">
                  <!-- Container nodes will be dynamically added here -->
                  <div class="node-card" id="daemon-card" style="width: 240px; height: 120px;">
                     <div class="node-title">daemon</div>
@@ -173,9 +170,9 @@
                              <stop offset="100%" style="stop-color:#61dafb;stop-opacity:0.8" />
                          </linearGradient>
                      </defs>
-                 </svg>
-            </div>
-            <div class="legend">
+                  </svg>
+             </div>
+             <div class="legend">
                 <span>Legend:</span>
                 <span class="legend-pill up"></span> <span>Healthy</span>
                 <span class="legend-pill warn"></span> <span>Warning</span>
@@ -197,16 +194,21 @@
 
      <script>
         const services = ['daemon', 'environment', 'frontend', 'device', 'mysql', 'user', 'guests', 'residents'];
-        const connections = [
-            {from: 'daemon', to: 'environment', class: 'speak-line'},
-            {from: 'daemon', to: 'frontend', class: 'google-line'},
-            {from: 'daemon', to: 'user', class: 'user-line'},
-            {from: 'frontend', to: 'user', class: 'frontend-user-line'},
-            {from: 'frontend', to: 'daemon', class: 'device-daemon-line'},
-            {from: 'environment', to: 'daemon', class: 'environment-line'},
-            {from: 'daemon', to: 'device', class: 'device-line'},
-            {from: 'device', to: 'user', class: 'device-user-line'}
-        ];
+         const connections = [
+             {from: 'daemon', to: 'environment', class: 'speak-line'},
+             {from: 'daemon', to: 'frontend', class: 'google-line'},
+             {from: 'daemon', to: 'user', class: 'user-line'},
+             {from: 'frontend', to: 'user', class: 'frontend-user-line'},
+             {from: 'frontend', to: 'daemon', class: 'device-daemon-line'},
+             {from: 'environment', to: 'daemon', class: 'environment-line'},
+             {from: 'daemon', to: 'device', class: 'device-line'},
+             {from: 'device', to: 'user', class: 'device-user-line'},
+             {from: 'daemon', to: 'mysql', class: 'mysql-daemon-line'},
+             {from: 'device', to: 'mysql', class: 'mysql-device-line'},
+             {from: 'environment', to: 'mysql', class: 'mysql-environment-line'},
+             {from: 'user', to: 'mysql', class: 'mysql-user-line'},
+             {from: 'frontend', to: 'mysql', class: 'mysql-frontend-line'}
+         ];
 
         function positionContainers() {
             const canvas = document.querySelector('.canvas');
@@ -279,7 +281,7 @@
                     updateServiceMetrics('user', data.user);
 
                     // Update user clusters
-                    updateUserClusters(data.guests, data.residents);
+                    updateUserClusters(data.users);
                 })
                 .catch(error => {
                     console.error('Error fetching dashboard data:', error);
@@ -352,11 +354,9 @@
             }
         }
 
-        function updateUserClusters(guests, residents) {
-            console.log('Guests:', guests);
-            console.log('Residents:', residents);
-            updateCluster('guests-cluster', guests);
-            updateCluster('residents-cluster', residents);
+        function updateUserClusters(users) {
+            console.log('Users:', users);
+            updateCluster('users-cluster', users);
         }
 
         function updateCluster(clusterId, users) {
@@ -365,19 +365,29 @@
             const existingCards = cluster.querySelectorAll('.user-card');
             existingCards.forEach(card => card.remove());
 
+            if (users.length === 0) return;
+
+            // Horizontal positioning to fit canvas
+            const n = users.length;
+            const totalWidth = 800;
+            const cardWidth = 120;
+            const spacing = n > 1 ? (totalWidth - cardWidth) / (n - 1) : 0;
+            const startX = (1000 - totalWidth) / 2 + cardWidth / 2;
+            const y = 100 - 25; // centerY - cardHeight/2
+
             // Create new cards
             users.forEach((user, index) => {
                 const card = document.createElement('div');
                 card.className = 'user-card';
                 card.innerHTML = `
+                    <div class="node-health" style="background-color: ${user.type === 'resident' ? 'var(--good)' : 'var(--warn)'}"></div>
                     <div class="user-username">${user.username}</div>
                     <div class="user-device">${user.device}</div>
                 `;
-                // Position in grid: 3 per row
-                const row = Math.floor(index / 3);
-                const col = index % 3;
-                card.style.left = `${col * 160}px`;
-                card.style.top = `${30 + row * 60}px`; // Adjust for title
+                // Position horizontally
+                const x = startX + index * spacing - cardWidth / 2;
+                card.style.left = `${x}px`;
+                card.style.top = `${y}px`;
                 cluster.appendChild(card);
                 // Animate in
                 setTimeout(() => card.classList.add('show'), index * 100);

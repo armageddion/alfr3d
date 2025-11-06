@@ -182,29 +182,25 @@ def dashboard_data():
     db = pymysql.connect(host=DATABASE_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
     cursor = db.cursor()
 
-    # Online guests with device
+    # Online guests with device and type
     cursor.execute("""
-        SELECT u.username, COALESCE(MIN(d.name), 'Unknown') as device FROM user u
+        SELECT u.username, COALESCE((SELECT d.name FROM device d JOIN states ds ON d.state = ds.id JOIN device_types dt ON d.device_type = dt.id WHERE d.user_id = u.id AND ds.state = 'online' AND dt.type IN ('guest', 'resident') ORDER BY d.name LIMIT 1), 'Unknown') as device, 'guest' as user_type FROM user u
         JOIN states s ON u.state = s.id
         JOIN user_types ut ON u.type = ut.id
-        LEFT JOIN device d ON u.id = d.user_id
         WHERE s.state = 'online' AND ut.type = 'guest' AND u.username != 'unknown'
-        GROUP BY u.username
         ORDER BY u.username
     """)
-    guests_online = [{'username': row[0], 'device': row[1]} for row in cursor.fetchall()]
+    guests_online = [{'username': row[0], 'device': row[1], 'type': row[2]} for row in cursor.fetchall()]
 
-    # Online residents, technokings, and owners with device
+    # Online residents, technokings, and owners with device and type
     cursor.execute("""
-        SELECT u.username, COALESCE(MIN(d.name), 'Unknown') as device FROM user u
+        SELECT u.username, COALESCE((SELECT d.name FROM device d JOIN states ds ON d.state = ds.id JOIN device_types dt ON d.device_type = dt.id WHERE d.user_id = u.id AND ds.state = 'online' AND dt.type IN ('guest', 'resident') ORDER BY d.name LIMIT 1), 'Unknown') as device, 'resident' as user_type FROM user u
         JOIN states s ON u.state = s.id
         JOIN user_types ut ON u.type = ut.id
-        LEFT JOIN device d ON u.id = d.user_id
         WHERE s.state = 'online' AND ut.type IN ('resident', 'technoking', 'owner') AND u.username != 'unknown'
-        GROUP BY u.username
         ORDER BY u.username
     """)
-    residents_online = [{'username': row[0], 'device': row[1]} for row in cursor.fetchall()]
+    residents_online = [{'username': row[0], 'device': row[1], 'type': row[2]} for row in cursor.fetchall()]
 
     db.close()
 
@@ -246,8 +242,7 @@ def dashboard_data():
             'memory': container_health.get('service_user', {}).get('memory', 28),
             'errors': 0
         },
-        'guests': guests_online,
-        'residents': residents_online,
+        'users': sorted(guests_online + residents_online, key=lambda x: x['username']),
         'system': system_metrics,
         'kafka': kafka_details,
         'mysql_details': mysql_details
