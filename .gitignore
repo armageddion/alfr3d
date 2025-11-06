@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 .env
 mysql_data/
+AGENTS.md

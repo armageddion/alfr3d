@@ -178,6 +178,36 @@ def dashboard_data():
     kafka_details = get_kafka_details()
     mysql_details = get_mysql_details()
 
+    # Get online users
+    db = pymysql.connect(host=DATABASE_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE)
+    cursor = db.cursor()
+
+    # Online guests with device
+    cursor.execute("""
+        SELECT u.username, COALESCE(MIN(d.name), 'Unknown') as device FROM user u
+        JOIN states s ON u.state = s.id
+        JOIN user_types ut ON u.type = ut.id
+        LEFT JOIN device d ON u.id = d.user_id
+        WHERE s.state = 'online' AND ut.type = 'guest' AND u.username != 'unknown'
+        GROUP BY u.username
+        ORDER BY u.username
+    """)
+    guests_online = [{'username': row[0], 'device': row[1]} for row in cursor.fetchall()]
+
+    # Online residents, technokings, and owners with device
+    cursor.execute("""
+        SELECT u.username, COALESCE(MIN(d.name), 'Unknown') as device FROM user u
+        JOIN states s ON u.state = s.id
+        JOIN user_types ut ON u.type = ut.id
+        LEFT JOIN device d ON u.id = d.user_id
+        WHERE s.state = 'online' AND ut.type IN ('resident', 'technoking', 'owner') AND u.username != 'unknown'
+        GROUP BY u.username
+        ORDER BY u.username
+    """)
+    residents_online = [{'username': row[0], 'device': row[1]} for row in cursor.fetchall()]
+
+    db.close()
+
     # Map service names to the data structure expected by dashboard
     dashboard_data = {
         'daemon': {
@@ -216,6 +246,8 @@ def dashboard_data():
             'memory': container_health.get('service_user', {}).get('memory', 28),
             'errors': 0
         },
+        'guests': guests_online,
+        'residents': residents_online,
         'system': system_metrics,
         'kafka': kafka_details,
         'mysql_details': mysql_details
