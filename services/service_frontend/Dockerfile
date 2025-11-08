@@ -1,18 +1,14 @@
-FROM python:3.9-slim
+FROM node:18-alpine
 
 WORKDIR /app
 
-COPY requirements.txt .
-
-RUN pip install -r requirements.txt
+COPY package*.json ./
+RUN npm install
 
 COPY . .
 
-ENV FLASK_APP=app.py
-ENV FLASK_DEBUG=1
-ENV PYTHONUNBUFFERED=1
+RUN npm run build
 
 EXPOSE 8000
 
-#CMD ["flask", "run", "--host=0.0.0.0", "--port=8000"]
-CMD ["python", "-u", "app.py"]
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "8000"]
