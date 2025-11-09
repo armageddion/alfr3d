@@ -31,7 +31,7 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
-      KAFKA_CREATE_TOPICS: "speak:1:1,environment:1:1,device:1:1,user:1:1,google:1:1"
+      KAFKA_CREATE_TOPICS: "speak:1:1,environment:1:1,device:1:1,user:1:1,google:1:1,event-stream:1:1"
     ports:
       - "9092:9092"
     healthcheck:
@@ -46,7 +46,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_PASSWORD: ${MYSQL_PSWD}
     ports:
       - "3306:3306"
     volumes:
@@ -60,10 +60,30 @@ services:
       mysql:
         condition: service_started
     environment:
-      - MYSQL_DATABASE_URL=${MYSQL_DATABASE_URL}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_PSWD=${MYSQL_PSWD}
+      - MYSQL_NAME=${MYSQL_NAME}
+      - KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS_1}
+      - ALFR3D_ENV_NAME=${ALFR3D_ENV_NAME}
+
+  service-api:
+    build: ./services/service_api
+    depends_on:
+      mysql:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    ports:
+      - "5002:5001"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    privileged: true
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PSWD=${MYSQL_PSWD}
+      - MYSQL_NAME=${MYSQL_NAME}
       - KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS_1}
       - ALFR3D_ENV_NAME=${ALFR3D_ENV_NAME}
 
@@ -76,10 +96,10 @@ services:
         condition: service_started
     network_mode: host  # To allow arp-scan on host network
     environment:
-      - MYSQL_DATABASE_URL=localhost
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_DATABASE=localhost
       - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_PSWD=${MYSQL_PSWD}
+      - MYSQL_NAME=${MYSQL_NAME}
       - KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS_2}
       - ALFR3D_ENV_NAME=${ALFR3D_ENV_NAME}
 
@@ -91,10 +111,10 @@ services:
       mysql:
         condition: service_started
     environment:
-      - MYSQL_DATABASE_URL=${MYSQL_DATABASE_URL}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_PSWD=${MYSQL_PSWD}
+      - MYSQL_NAME=${MYSQL_NAME}
       - KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS_1}
       - ALFR3D_ENV_NAME=${ALFR3D_ENV_NAME}
 
@@ -106,31 +126,19 @@ services:
       mysql:
         condition: service_started
     environment:
-      - MYSQL_DATABASE_URL=${MYSQL_DATABASE_URL}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_PSWD=${MYSQL_PSWD}
+      - MYSQL_NAME=${MYSQL_NAME}
       - KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS_1}
       - ALFR3D_ENV_NAME=${ALFR3D_ENV_NAME}
 
   service-frontend:
     build: ./services/service_frontend
-    depends_on:
-      mysql:
-        condition: service_started
-      kafka:
-        condition: service_healthy
     ports:
       - "8000:8000"
     environment:
-      - MYSQL_DATABASE_URL=${MYSQL_DATABASE_URL}
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - KAFKA_BOOTSTRAP_SERVERS=${KAFKA_BOOTSTRAP_SERVERS_1}
       - SECRET_KEY=${SECRET_KEY}
-      - FLASK_APP=app.py
-      - PYTHONUNBUFFERED=1
 
   test-mysql:
     image: mysql:8.0

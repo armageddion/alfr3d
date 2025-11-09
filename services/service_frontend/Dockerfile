@@ -9,6 +9,9 @@ COPY . .
 
 RUN npm run build
 
+# Install a static file server
+RUN npm install -g serve
+
 EXPOSE 8000
 
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["serve", "-s", "dist", "-l", "8000"]

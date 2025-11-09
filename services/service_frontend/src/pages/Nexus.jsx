@@ -37,17 +37,18 @@ const Nexus = () => {
             <SituationalAwareness />
             <OnlineUsers />
           </motion.div>
-          
+
           {/* Center Core */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.6, duration: 0.8 }}
-            className="flex-1 flex justify-center items-center"
+            className="flex-1 flex flex-col justify-center items-center gap-8"
           >
             <Core health={systemHealth} />
+            <EventStream />
           </motion.div>
-          
+
           {/* Right Panels */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
@@ -56,9 +57,10 @@ const Nexus = () => {
             className="flex flex-col gap-6 w-full lg:w-80"
           >
             <ContainerHealth />
-            <EventStream />
           </motion.div>
         </div>
+
+
       </div>
     </motion.div>
   );

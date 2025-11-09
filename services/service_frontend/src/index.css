@@ -23,37 +23,12 @@
   body {
     font-family: 'Exo 2', sans-serif;
     font-weight: 300;
-    background:
-      radial-gradient(ellipse at center, rgba(67, 227, 240, 0.03) 0%, transparent 50%),
-      linear-gradient(135deg, #0A0F14 0%, #05070A 100%);
-    background-attachment: fixed;
+    background: var(--color-bg-primary);
     color: var(--color-text);
     margin: 0;
     padding: 0;
     overflow-x: hidden;
     min-height: 100vh;
-  }
-
-  /* Nebula background pattern */
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image:
-      radial-gradient(circle at 20% 80%, rgba(67, 227, 240, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, rgba(240, 67, 139, 0.08) 0%, transparent 50%),
-      radial-gradient(circle at 40% 40%, rgba(240, 212, 67, 0.06) 0%, transparent 50%);
-    animation: nebula-rotate 120s linear infinite;
-    pointer-events: none;
-    z-index: -2;
-  }
-
-  @keyframes nebula-rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
   }
 }
 
@@ -146,4 +121,10 @@
 
 .ring-3 {
   animation: rotate-slow 80s linear infinite;
+}
+
+/* Grid background with + signs */
+.grid-bg {
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><text x="20" y="20" text-anchor="middle" dominant-baseline="middle" font-size="12" fill="rgba(255,255,255,0.3)">+</text></svg>');
+  background-repeat: repeat;
 }

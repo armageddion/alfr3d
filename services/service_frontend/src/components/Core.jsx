@@ -3,10 +3,14 @@ import { Sun, Moon } from 'lucide-react';
 import Lottie from 'lottie-react';
 import { useState, useEffect } from 'react';
 
+// containers will be fetched from API
+
 const Core = ({ health }) => {
   const [animationData, setAnimationData] = useState(null);
   const [animationFinished, setAnimationFinished] = useState(false);
   const [rotation, setRotation] = useState(0);
+  const [users, setUsers] = useState([]);
+  const [containers, setContainers] = useState([]);
   const currentHour = new Date().getHours();
   const isDay = currentHour >= 6 && currentHour < 18;
 
@@ -28,6 +32,38 @@ const Core = ({ health }) => {
       rotateRandomly();
     }
   }, [animationFinished]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('http://localhost:5002/api/users?online=true');
+        const data = await response.json();
+        console.log('Fetched users for Core:', data);
+        setUsers(data);
+      } catch (error) {
+        console.error('Error fetching users for Core:', error);
+      }
+    };
+    fetchUsers();
+    const interval = setInterval(fetchUsers, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const fetchContainers = async () => {
+      try {
+        const response = await fetch('http://localhost:5002/api/containers');
+        const data = await response.json();
+        console.log('Fetched containers for Core:', data);
+        setContainers(data);
+      } catch (error) {
+        console.error('Error fetching containers for Core:', error);
+      }
+    };
+    fetchContainers();
+    const interval = setInterval(fetchContainers, 10000); // Update every 10 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <motion.svg
@@ -59,9 +95,38 @@ const Core = ({ health }) => {
           fill="none"
           stroke={`url(#gradient-${health})`}
           strokeWidth="1"
+          strokeDasharray={users.length > 0 ? `${((360 / users.length - 20) / 360) * 2 * Math.PI * 110} ${(20 / 360) * 2 * Math.PI * 110}` : "none"}
+          strokeDashoffset={-((20 / 360) * 2 * Math.PI * 110) / 2}
           animate={{ rotate: -360 }}
           transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
         />
+
+        {/* User Balls on Middle Ring */}
+        <motion.g
+          transformBox="fill-box"
+          transform={`translate(150 150)`}
+          style={{ transformOrigin: '150px 150px' }}
+          animate={{ rotate: -360 }}
+          transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
+        >
+          {users.length > 0 && users.map((user, index) => {
+            const angle = (index / users.length) * 360;
+            const radian = (angle * Math.PI) / 180;
+            const x = 110 * Math.cos(radian);
+            const y = 110 * Math.sin(radian);
+            const color = user.type === 'resident' ? '#10b981' : '#fbbf24'; // green for resident, yellow for guest
+            return (
+              <circle
+                key={user.id ?? user.name ?? index}
+                cx={x}
+                cy={y}
+                r={5}
+                fill={color}
+                className="drop-shadow-lg"
+              />
+            );
+          })}
+        </motion.g>
         
         {/* Inner Ring */}
         <motion.circle
@@ -71,9 +136,38 @@ const Core = ({ health }) => {
           fill="none"
           stroke={`url(#gradient-${health})`}
           strokeWidth="1"
+          strokeDasharray="97.8 27.9"
+          strokeDashoffset={-((80 / 360) * 2 * Math.PI * 80) / 2}
           animate={{ rotate: 360 }}
           transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
         />
+
+        {/* Container Balls on Inner Ring */}
+        <motion.g
+          transformBox="fill-box"
+          transform={`translate(150 150)`}
+          style={{ transformOrigin: '150px 150px' }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+        >
+          {containers.length > 0 && containers.map((container, index) => {
+            const angle = (index / containers.length) * 360;
+            const radian = (angle * Math.PI) / 180;
+            const x = 80 * Math.cos(radian);
+            const y = 80 * Math.sin(radian);
+            const color = container.errors > 0 ? '#ef4444' : '#10b981'; // red if errors, green if ok
+            return (
+              <circle
+                key={container.id ?? container.name ?? index}
+                cx={x}
+                cy={y}
+                r={5}
+                fill={color}
+                className="drop-shadow-lg"
+              />
+            );
+          })}
+        </motion.g>
         
         {/* Central Core - Lottie Logo */}
         <foreignObject x="80" y="80" width="140" height="140">

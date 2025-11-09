@@ -3,8 +3,11 @@ import os
 import sys
 import time
 import logging
+import json
 import socket
 import pymysql  # Changed from MySQLdb
+import subprocess
+import datetime
 from kafka import KafkaConsumer, KafkaProducer
 from datetime import datetime, timedelta
 
@@ -20,10 +23,10 @@ handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-MYSQL_DATABASE_URL = os.environ["MYSQL_DATABASE_URL"]
 MYSQL_DATABASE = os.environ["MYSQL_DATABASE"]
+MYSQL_DB = os.environ["MYSQL_NAME"]
 MYSQL_USER = os.environ["MYSQL_USER"]
-MYSQL_PASSWORD = os.environ["MYSQL_PASSWORD"]
+MYSQL_PSWD = os.environ["MYSQL_PSWD"]
 KAFKA_URL = os.environ["KAFKA_BOOTSTRAP_SERVERS"]
 ALFR3D_ENV_NAME = os.environ.get("ALFR3D_ENV_NAME")
 
@@ -32,7 +35,7 @@ while producer is None:
     try:
         producer = KafkaProducer(bootstrap_servers=[KAFKA_URL])
         logger.info("Connected to Kafka")
-    except Exception as e:
+    except Exception:
         logger.error("Failed to connect to Kafka, retrying in 5 seconds")
         time.sleep(5)
 
@@ -59,10 +62,10 @@ class Device:
         """
         logger.info("Creating a new device")
         db = pymysql.connect(
-            host=MYSQL_DATABASE_URL,
+            host=MYSQL_DATABASE,
             user=MYSQL_USER,
-            password=MYSQL_PASSWORD,
-            database=MYSQL_DATABASE,
+            password=MYSQL_PSWD,
+            database=MYSQL_DB,
         )
         cursor = db.cursor()
         cursor.execute("SELECT * from device WHERE MAC = %s", (mac,))
@@ -74,6 +77,13 @@ class Device:
             return False
 
         logger.info("Creating a new DB entry for device with MAC: " + mac)
+        db = pymysql.connect(
+            host=MYSQL_DATABASE,
+            user=MYSQL_USER,
+            password=MYSQL_PSWD,
+            database=MYSQL_DB,
+        )
+        cursor = db.cursor()
         try:
             cursor.execute("SELECT * from states WHERE state = %s", (self.state,))
             devstate_data = cursor.fetchone()
@@ -118,45 +128,16 @@ class Device:
             db.rollback()
             db.close()
             return False
-            devstate = devstate_data[0]
-            cursor.execute("SELECT * from device_types WHERE type = %s", (self.deviceType,))
-            devtype_data = cursor.fetchone()
-            if not devtype_data:
-                logger.error("Device type not found")
-                db.rollback()
-                db.close()
-                return False
-            devtype = devtype_data[0]
-            cursor.execute("SELECT * from user WHERE username = %s", (self.user,))
-            usrid_data = cursor.fetchone()
-            if not usrid_data:
-                logger.error("User not found")
-                db.rollback()
-                db.close()
-                return False
-            usrid = usrid_data[0]
-            cursor.execute("SELECT * from environment WHERE name = %s", (self.environment,))
-            envid_data = cursor.fetchone()
-            if not envid_data:
-                logger.error("Environment not found")
-                db.rollback()
-                db.close()
-                return False
-            envid = envid_data[0]
-            cursor.execute(
-                "INSERT INTO device(name, IP, MAC, last_online, state, device_type, user_id, environment_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-                (self.name, self.IP, self.MAC, self.last_online, devstate, devtype, usrid, envid),
-            )
-            db.commit()
-        except Exception as e:
-            logger.error("Failed to create a new entry in the database")
-            logger.error("Traceback: " + str(e))
-            db.rollback()
-            db.close()
-            return False
 
         db.close()
-        producer.send("speak", b"A new device was added to the database")
+        event = {
+            "id": f"device_created_{self.name}_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+            "type": "success",
+            "message": f"New device {self.name} added to database",
+            "time": datetime.now().strftime("%I:%M %p"),
+        }
+        producer.send("event-stream", json.dumps(event).encode("utf-8"))
+        logger.info("Device created successfully")
         return True
 
     def get(self, mac):
@@ -166,10 +147,10 @@ class Device:
         """
         logger.info("Looking for device with MAC: " + mac)
         db = pymysql.connect(
-            host=MYSQL_DATABASE_URL,
+            host=MYSQL_DATABASE,
             user=MYSQL_USER,
-            password=MYSQL_PASSWORD,
-            database=MYSQL_DATABASE,
+            password=MYSQL_PSWD,
+            database=MYSQL_DB,
         )
         cursor = db.cursor()
         cursor.execute("SELECT * from device WHERE MAC = %s", (mac,))
@@ -204,10 +185,10 @@ class Device:
         """
         logger.info("Updating device")
         db = pymysql.connect(
-            host=MYSQL_DATABASE_URL,
+            host=MYSQL_DATABASE,
             user=MYSQL_USER,
-            password=MYSQL_PASSWORD,
-            database=MYSQL_DATABASE,
+            password=MYSQL_PSWD,
+            database=MYSQL_DB,
         )
         cursor = db.cursor()
         cursor.execute("SELECT * from device WHERE MAC = %s", (self.MAC,))
@@ -249,6 +230,13 @@ class Device:
             )
 
             db.commit()
+            event = {
+                "id": f"device_online_{self.name}_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                "type": "info",
+                "message": f"Device {self.name} came online",
+                "time": datetime.now().strftime("%I:%M %p"),
+            }
+            producer.send("event-stream", json.dumps(event).encode("utf-8"))
         except Exception as e:
             logger.error("Failed to update the database")
             logger.error("Traceback: " + str(e))
@@ -268,10 +256,10 @@ class Device:
         """
         logger.info("Deleting device")
         db = pymysql.connect(
-            host=MYSQL_DATABASE_URL,
+            host=MYSQL_DATABASE,
             user=MYSQL_USER,
-            password=MYSQL_PASSWORD,
-            database=MYSQL_DATABASE,
+            password=MYSQL_PSWD,
+            database=MYSQL_DB,
         )
         cursor = db.cursor()
         cursor.execute("SELECT * from device WHERE MAC = %s", (self.MAC,))
@@ -324,7 +312,7 @@ def checkLAN():
     # parse MAC and IP addresses
     for line in netClients:
         print(line)
-        if line.startswith("192.") == False and line.startswith("10.") == False:
+        if not line.startswith("192.") and not line.startswith("10."):
             continue
         ret = line.split("\t")
         # parse MAC addresses from arp-scan run
@@ -373,7 +361,7 @@ def checkLAN():
 
     # Check for devices that have been offline for more than 30 minutes and set them to offline
     db = pymysql.connect(
-        host=MYSQL_DATABASE_URL, user=MYSQL_USER, password=MYSQL_PASSWORD, database=MYSQL_DATABASE
+        host=MYSQL_DATABASE, user=MYSQL_USER, password=MYSQL_PSWD, database=MYSQL_DB
     )
     cursor = db.cursor()
 
@@ -392,7 +380,7 @@ def checkLAN():
     for device in devices:
         last_online_str = device[5]
         try:
-            #last_online = datetime.strptime(last_online_str, "%Y-%m-%d %H:%M:%S")
+            # last_online = datetime.strptime(last_online_str, "%Y-%m-%d %H:%M:%S")
             last_online = last_online_str
             delta = time_now - last_online
             if delta > timedelta(minutes=30) and device[4] == stat["online"]:
@@ -401,8 +389,15 @@ def checkLAN():
                     "UPDATE device SET state = %s WHERE MAC = %s", (stat["offline"], device[3])
                 )
                 db.commit()
-        except Exception as e:
-            logger.error("Error checking device offline status: " + str(e))
+                event = {
+                    "id": f"device_offline_{device[3]}_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+                    "type": "warning",
+                    "message": f"Device {device[3]} went offline due to inactivity",
+                    "time": datetime.now().strftime("%I:%M %p"),
+                }
+                producer.send("event-stream", json.dumps(event).encode("utf-8"))
+        except Exception:
+            logger.error("Error checking device offline status")
 
     db.close()
 
@@ -421,7 +416,7 @@ if __name__ == "__main__":
         try:
             consumer = KafkaConsumer("device", bootstrap_servers=KAFKA_URL)
             logger.info("Connected to Kafka device topic")
-        except Exception as e:
+        except Exception:
             logger.error("Failed to connect to Kafka device topic, retrying in 5 seconds")
             time.sleep(5)
 

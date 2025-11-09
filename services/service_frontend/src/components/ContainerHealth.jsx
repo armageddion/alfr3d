@@ -2,15 +2,25 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { Cpu, HardDrive, MemoryStick, AlertTriangle } from 'lucide-react';
 
-const containers = [
-  { name: 'service-user', cpu: 15, mem: 45, disk: 20, errors: 0 },
-  { name: 'service-device', cpu: 8, mem: 32, disk: 15, errors: 1 },
-  { name: 'service-environment', cpu: 12, mem: 28, disk: 18, errors: 0 },
-  { name: 'service-daemon', cpu: 5, mem: 22, disk: 12, errors: 0 },
-];
-
 const ContainerHealth = () => {
   const [selectedContainer, setSelectedContainer] = useState(null);
+  const [containers, setContainers] = useState([]);
+
+  useEffect(() => {
+    const fetchContainers = async () => {
+      try {
+        const response = await fetch('http://localhost:5002/api/containers');
+        const data = await response.json();
+        console.log('Fetched containers for ContainerHealth:', data);
+        setContainers(data);
+      } catch (error) {
+        console.error('Error fetching containers for ContainerHealth:', error);
+      }
+    };
+    fetchContainers();
+    const interval = setInterval(fetchContainers, 10000); // Update every 10 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="glass rounded-2xl p-6">

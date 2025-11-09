@@ -1,23 +1,31 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Clock, AlertTriangle, CheckCircle } from 'lucide-react';
-
-const events = [
-  { id: 'event1', type: 'info', message: 'System initialized successfully', time: '10:30 AM' },
-  { id: 'event2', type: 'warning', message: 'Device service latency detected', time: '10:25 AM' },
-  { id: 'event3', type: 'success', message: 'User authentication completed', time: '10:20 AM' },
-  { id: 'event4', type: 'info', message: 'Environment data updated', time: '10:15 AM' },
-];
 
 const EventStream = () => {
   const [displayedEvents, setDisplayedEvents] = useState([]);
+  const eventStreamRef = useRef(null);
 
   useEffect(() => {
-    events.forEach((event, index) => {
-      setTimeout(() => {
-        setDisplayedEvents(prev => [event, ...prev]);
-      }, index * 1000);
-    });
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch('http://localhost:5002/api/events');
+        const events = await response.json();
+        // Reverse to show newest first, limit to 10
+        const latestEvents = events.reverse().slice(0, 10);
+        setDisplayedEvents(latestEvents);
+        // Autoscroll to bottom
+        if (eventStreamRef.current) {
+          eventStreamRef.current.scrollTop = eventStreamRef.current.scrollHeight;
+        }
+      } catch (error) {
+        console.error('Error fetching events:', error);
+      }
+    };
+
+    fetchEvents();
+    const interval = setInterval(fetchEvents, 5000); // Update every 5 seconds
+    return () => clearInterval(interval);
   }, []);
 
   const getIcon = (type) => {
@@ -31,7 +39,7 @@ const EventStream = () => {
   return (
     <div className="glass rounded-2xl p-6 h-96 overflow-hidden">
       <h2 className="text-xl font-bold text-cyan-400 mb-4 drop-shadow-lg">Event Stream</h2>
-      <div className="space-y-3 overflow-y-auto h-full pb-4">
+      <div ref={eventStreamRef} className="space-y-3 overflow-y-auto h-full pb-4">
         <AnimatePresence>
           {displayedEvents.map((event) => (
             <motion.div
