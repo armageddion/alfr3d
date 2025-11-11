@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { Cpu, HardDrive, MemoryStick, AlertTriangle } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 const ContainerHealth = () => {
   const [selectedContainer, setSelectedContainer] = useState(null);
@@ -9,7 +10,7 @@ const ContainerHealth = () => {
   useEffect(() => {
     const fetchContainers = async () => {
       try {
-        const response = await fetch('http://localhost:5002/api/containers');
+        const response = await fetch(API_BASE_URL + '/api/containers');
         const data = await response.json();
         console.log('Fetched containers for ContainerHealth:', data);
         setContainers(data);
@@ -23,7 +24,7 @@ const ContainerHealth = () => {
   }, []);
 
   return (
-    <div className="glass rounded-2xl p-6">
+    <div className="glass rounded-2xl p-6 border border-cyan-500/30 bg-slate-800/20">
       <h2 className="text-xl font-bold text-cyan-400 mb-4 drop-shadow-lg">Container Health</h2>
 
       <div className="space-y-4">
@@ -60,28 +61,28 @@ const ContainerHealth = () => {
             {/* Progress bars */}
             <div className="mt-2 space-y-1">
               <div className="w-full bg-slate-700 rounded-full h-1">
-                <motion.div
-                  className="bg-cyan-400 h-1 rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${container.cpu}%` }}
-                  transition={{ delay: 0.5 + index * 0.1, duration: 1 }}
-                />
+                 <motion.div
+                   className="bg-cyan-400 h-1 rounded-full"
+                   initial={{ width: 0 }}
+                    animate={{ width: Math.min(container.cpu, 100) + '%' }}
+                   transition={{ delay: 0.5 + index * 0.1, duration: 1 }}
+                 />
               </div>
               <div className="w-full bg-slate-700 rounded-full h-1">
-                <motion.div
-                  className="bg-green-400 h-1 rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${container.mem}%` }}
-                  transition={{ delay: 0.6 + index * 0.1, duration: 1 }}
-                />
+                 <motion.div
+                   className="bg-green-400 h-1 rounded-full"
+                   initial={{ width: 0 }}
+                    animate={{ width: Math.min(container.mem, 100) + '%' }}
+                   transition={{ delay: 0.6 + index * 0.1, duration: 1 }}
+                 />
               </div>
               <div className="w-full bg-slate-700 rounded-full h-1">
-                <motion.div
-                  className="bg-yellow-400 h-1 rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${container.disk}%` }}
-                  transition={{ delay: 0.7 + index * 0.1, duration: 1 }}
-                />
+                 <motion.div
+                   className="bg-yellow-400 h-1 rounded-full"
+                   initial={{ width: 0 }}
+                    animate={{ width: Math.min(container.disk, 100) + '%' }}
+                   transition={{ delay: 0.7 + index * 0.1, duration: 1 }}
+                 />
               </div>
             </div>
           </motion.div>

@@ -171,7 +171,10 @@ class Device:
         self.state = data[4]
         self.last_online = data[5]
         self.deviceType = data[6]
-        self.user = data[7]
+        # Get username from user_id
+        cursor.execute("SELECT username FROM user WHERE id = %s", (data[7],))
+        user_data = cursor.fetchone()
+        self.user = user_data[0] if user_data else "unknown"
         self.environment = data[8]
 
         db.close()
@@ -230,6 +233,7 @@ class Device:
             )
 
             db.commit()
+
             event = {
                 "id": f"device_online_{self.name}_{datetime.now().strftime('%Y%m%d%H%M%S')}",
                 "type": "info",
@@ -389,6 +393,7 @@ def checkLAN():
                     "UPDATE device SET state = %s WHERE MAC = %s", (stat["offline"], device[3])
                 )
                 db.commit()
+
                 event = {
                     "id": f"device_offline_{device[3]}_{datetime.now().strftime('%Y%m%d%H%M%S')}",
                     "type": "warning",

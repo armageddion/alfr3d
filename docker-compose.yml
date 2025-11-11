@@ -12,26 +12,14 @@ services:
     depends_on:
       - zookeeper
     environment:
-      KAFKA_BROKER_ID: ${KAFKA_BROKER_ID}
-      KAFKA_ZOOKEEPER_CONNECT: ${KAFKA_ZOOKEEPER_CONNECT}
-
-      # Step 1: Define how different logical listener names map to security protocols
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
-      
-      # Step 2: Define the actual listeners and the ports they listen on *inside the container*
-      # INTERNAL listener for other containers within the Docker network
-      # EXTERNAL listener for access from the host network (mapped to 9092)
-      KAFKA_LISTENERS: INTERNAL:${KAFKA_LISTENERS_1},EXTERNAL:${KAFKA_LISTENERS_2}
-      
-      # Step 3: Advertise these listeners with their appropriate hostnames/IPs and ports
-      # INTERNAL listener advertised for other Docker containers
-      # EXTERNAL listener advertised for the host-mode container via localhost
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL:${KAFKA_ADVERTISED_LISTENERS_1},EXTERNAL:${KAFKA_ADVERTISED_LISTENERS_2}
-
-      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-      
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
-      KAFKA_CREATE_TOPICS: "speak:1:1,environment:1:1,device:1:1,user:1:1,google:1:1,event-stream:1:1"
+      - KAFKA_BROKER_ID=${KAFKA_BROKER_ID}
+      - KAFKA_ZOOKEEPER_CONNECT=${KAFKA_ZOOKEEPER_CONNECT}
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_LISTENERS=INTERNAL:${KAFKA_LISTENERS_1},EXTERNAL:${KAFKA_LISTENERS_2}
+      - KAFKA_ADVERTISED_LISTENERS=INTERNAL:${KAFKA_ADVERTISED_LISTENERS_1},EXTERNAL:${KAFKA_ADVERTISED_LISTENERS_2}
+      - KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=${KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR}
+      - KAFKA_CREATE_TOPICS=speak:1:1,environment:1:1,device:1:1,user:1:1,google:1:1,event-stream:1:1
     ports:
       - "9092:9092"
     healthcheck:
@@ -75,7 +63,7 @@ services:
       kafka:
         condition: service_healthy
     ports:
-      - "5002:5001"
+      - "5001:5001"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     privileged: true
@@ -139,6 +127,7 @@ services:
       - "8000:8000"
     environment:
       - SECRET_KEY=${SECRET_KEY}
+      - API_BASE_URL=${API_BASE_URL}
 
   test-mysql:
     image: mysql:8.0

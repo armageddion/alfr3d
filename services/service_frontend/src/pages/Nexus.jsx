@@ -26,7 +26,7 @@ const Nexus = () => {
           ALFR3D Nexus
         </motion.h1>
         
-        <div className="flex flex-row gap-8 flex-wrap justify-center items-start">
+        <div className="flex flex-row gap-8 flex-wrap justify-center items-center">
           {/* Left Panels */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}

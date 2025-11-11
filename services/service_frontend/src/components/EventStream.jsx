@@ -1,23 +1,19 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Clock, AlertTriangle, CheckCircle } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 const EventStream = () => {
   const [displayedEvents, setDisplayedEvents] = useState([]);
-  const eventStreamRef = useRef(null);
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch('http://localhost:5002/api/events');
+        const response = await fetch(API_BASE_URL + '/api/events');
         const events = await response.json();
-        // Reverse to show newest first, limit to 10
-        const latestEvents = events.reverse().slice(0, 10);
+        // Reverse to show newest first, limit to 4
+        const latestEvents = events.reverse().slice(0, 4);
         setDisplayedEvents(latestEvents);
-        // Autoscroll to bottom
-        if (eventStreamRef.current) {
-          eventStreamRef.current.scrollTop = eventStreamRef.current.scrollHeight;
-        }
       } catch (error) {
         console.error('Error fetching events:', error);
       }
@@ -37,18 +33,18 @@ const EventStream = () => {
   };
 
   return (
-    <div className="glass rounded-2xl p-6 h-96 overflow-hidden">
+    <div className="glass rounded-2xl p-6 h-96 border border-cyan-500/30 bg-slate-800/20">
       <h2 className="text-xl font-bold text-cyan-400 mb-4 drop-shadow-lg">Event Stream</h2>
-      <div ref={eventStreamRef} className="space-y-3 overflow-y-auto h-full pb-4">
+      <div className="space-y-3 h-full pb-4">
         <AnimatePresence>
-          {displayedEvents.map((event) => (
+          {displayedEvents.map((event, index) => (
             <motion.div
               key={event.id}
               initial={{ opacity: 0, y: -20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
+              animate={{ opacity: 1 - (index * 0.2), y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              transition={{ duration: 0.5 }}
-              className="flex items-start space-x-3 p-3 rounded-lg bg-slate-800/30"
+              transition={{ duration: 0.3 }}
+              className="flex items-start space-x-3 p-3 rounded-lg bg-slate-800/30 w-full"
             >
               {getIcon(event.type)}
               <div className="flex-1">

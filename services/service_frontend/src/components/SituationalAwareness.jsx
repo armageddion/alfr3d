@@ -13,7 +13,7 @@ const SituationalAwareness = () => {
   const isDay = time.getHours() >= 6 && time.getHours() < 18;
 
   return (
-    <div className="glass rounded-2xl p-6">
+    <div className="glass rounded-2xl p-6 border border-cyan-500/30 bg-slate-800/20">
       <h2 className="text-xl font-bold text-cyan-400 mb-4 drop-shadow-lg">Situational Awareness</h2>
 
       <div className="space-y-4">

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { User } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 
 const OnlineUsers = () => {
   const [users, setUsers] = useState([]);
@@ -8,7 +9,7 @@ const OnlineUsers = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('http://localhost:5002/api/users?online=true');
+        const response = await fetch(API_BASE_URL + '/api/users?online=true');
         const data = await response.json();
         console.log('Fetched users:', data);
         setUsers(data);
@@ -23,23 +24,23 @@ const OnlineUsers = () => {
   }, []);
 
   return (
-    <div className="glass rounded-2xl p-6">
+    <div className="glass rounded-2xl p-6 border border-cyan-500/30 bg-slate-800/20">
       <h2 className="text-xl font-bold text-cyan-400 mb-4 drop-shadow-lg">Online Users</h2>
 
-       <div className="space-y-3">
-         {users.map((user, index) => (
-          <motion.div
-            key={user.name}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1, duration: 0.3 }}
-            className="flex items-center space-x-2 py-1"
-          >
-            <User className={`w-4 h-4 ${user.type === 'resident' ? 'text-green-400' : 'text-yellow-400'}`} />
-            <span className="text-sm text-gray-300">{user.name}</span>
-          </motion.div>
-        ))}
-      </div>
+        <div className="space-y-3">
+          {users.map((user, index) => (
+            <motion.div
+              key={user.name}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1, duration: 0.3 }}
+              className="flex items-center space-x-2 py-1"
+            >
+              <User className={`w-4 h-4 ${user.type !== 'guest' ? 'text-green-400' : 'text-yellow-400'}`} />
+              <span className="text-sm text-gray-300">{user.name}</span>
+            </motion.div>
+          ))}
+        </div>
     </div>
   );
 };
