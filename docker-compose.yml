@@ -122,12 +122,15 @@ services:
       - ALFR3D_ENV_NAME=${ALFR3D_ENV_NAME}
 
   service-frontend:
-    build: ./services/service_frontend
+    build:
+      context: ./services/service_frontend
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
     ports:
       - "8000:8000"
     environment:
       - SECRET_KEY=${SECRET_KEY}
-      - API_BASE_URL=${API_BASE_URL}
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
   test-mysql:
     image: mysql:8.0
