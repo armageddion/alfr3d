@@ -36,6 +36,7 @@ const Core = () => {
   const [rotationAngle, setRotationAngle] = useState(0);
   const [containers, setContainers] = useState([]);
   const [users, setUsers] = useState([]);
+  const [sunAngle, setSunAngle] = useState(0);
 
   const timeRatio = (new Date().getHours() * 60 + new Date().getMinutes()) / (24 * 60);
 
@@ -94,6 +95,30 @@ const Core = () => {
       return () => clearTimeout(timeoutId);
     }
   }, [isIntroFinished]);
+
+  // Effect to update sun angle based on time
+  useEffect(() => {
+    const updateSunAngle = () => {
+      const now = new Date();
+      const timeRatio = (now.getHours() * 60 + now.getMinutes()) / (24 * 60);
+      let angle;
+      if (timeRatio >= 0.25 && timeRatio <= 0.75) {
+        // Day: upper half, -90° to 90°
+        angle = ((timeRatio - 0.25) / 0.5) * Math.PI - Math.PI / 2;
+      } else {
+        // Night: bottom half, 90° to 270°
+        if (timeRatio < 0.25) {
+          angle = (timeRatio / 0.25) * Math.PI + Math.PI / 2;
+        } else {
+          angle = ((timeRatio - 0.75) / 0.25) * Math.PI + Math.PI / 2;
+        }
+      }
+      setSunAngle(angle);
+    };
+    updateSunAngle();
+    const interval = setInterval(updateSunAngle, 60000); // Update every minute
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     // Responsive container that maintains a square aspect ratio
@@ -174,24 +199,18 @@ const Core = () => {
         })}
       </motion.div>
       
-      {/* Sun Orbit - This div also rotates on top */}
-      <motion.div
-        className="absolute top-0 left-0 w-full h-full"
-        initial={{ rotate: timeRatio * 360 }}
-        animate={{ rotate: 360 + (timeRatio * 360) }}
-        transition={{ duration: 86400, repeat: Infinity, ease: "linear" }}
-        style={{ zIndex: 10 }}
-      >
-          <Satellite
-            radius={160} // 80% ring radius
-            angle={-Math.PI / 2}
-            size={24}
-            color="transparent"
-            glowColor="#fde047"
-          >
-            <Sun className="w-full h-full text-yellow-300"/>
-          </Satellite>
-      </motion.div>
+       {/* Sun Orbit - Positioned based on time */}
+       <div className="absolute top-0 left-0 w-full h-full" style={{ zIndex: 10 }}>
+         <Satellite
+           radius={160} // 80% ring radius
+           angle={sunAngle}
+           size={24}
+           color="transparent"
+           glowColor="#fde047"
+         >
+           <Sun className="w-full h-full text-yellow-300"/>
+         </Satellite>
+       </div>
     </div>
   );
 };

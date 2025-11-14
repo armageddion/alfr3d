@@ -33,6 +33,7 @@ ALFR3D_ENV_NAME = os.environ["ALFR3D_ENV_NAME"]
 
 # Store recent events
 recent_events = []
+recent_sa = []
 
 
 def consume_events():
@@ -52,6 +53,24 @@ def consume_events():
                 logger.error(f"Error processing event message: {str(e)}")
     except Exception as e:
         logger.error(f"Error connecting to Kafka for events: {str(e)}")
+
+
+def consume_sa():
+    try:
+        consumer = KafkaConsumer(
+            "situational-awareness", bootstrap_servers=KAFKA_URL, auto_offset_reset="latest"
+        )
+        logger.info("Connected to Kafka situational-awareness topic")
+        for message in consumer:
+            try:
+                data = json.loads(message.value.decode("utf-8"))
+                recent_sa.clear()  # Keep only latest
+                recent_sa.append(data)
+                logger.info(f"Received SA: {data}")
+            except Exception as e:
+                logger.error(f"Error processing SA message: {str(e)}")
+    except Exception as e:
+        logger.error(f"Error connecting to Kafka for SA: {str(e)}")
 
 
 # Check if Docker is available via subprocess
@@ -110,7 +129,18 @@ def get_users():
             """,
                 (ALFR3D_ENV_NAME,),
             )
-        users = [{"id": row[0], "name": row[1], "email": row[2], "about_me": row[3], "state": row[4], "type": row[5], "last_online": str(row[6])} for row in cursor.fetchall()]
+        users = [
+            {
+                "id": row[0],
+                "name": row[1],
+                "email": row[2],
+                "about_me": row[3],
+                "state": row[4],
+                "type": row[5],
+                "last_online": str(row[6]),
+            }
+            for row in cursor.fetchall()
+        ]
         db.close()
         logger.info(f"Returning {len(users)} users")
         return jsonify(users)
@@ -119,13 +149,45 @@ def get_users():
         # Return mock data for development
         mock_users = (
             [
-                {"id": 1, "name": "Alice", "type": "resident", "email": "", "about_me": "", "state": "online", "last_online": ""},
-                {"id": 2, "name": "Bob", "type": "guest", "email": "", "about_me": "", "state": "online", "last_online": ""},
+                {
+                    "id": 1,
+                    "name": "Alice",
+                    "type": "resident",
+                    "email": "",
+                    "about_me": "",
+                    "state": "online",
+                    "last_online": "",
+                },
+                {
+                    "id": 2,
+                    "name": "Bob",
+                    "type": "guest",
+                    "email": "",
+                    "about_me": "",
+                    "state": "online",
+                    "last_online": "",
+                },
             ]
             if online
             else [
-                {"id": 1, "name": "Alice", "type": "resident", "email": "", "about_me": "", "state": "online", "last_online": ""},
-                {"id": 2, "name": "Bob", "type": "guest", "email": "", "about_me": "", "state": "offline", "last_online": ""},
+                {
+                    "id": 1,
+                    "name": "Alice",
+                    "type": "resident",
+                    "email": "",
+                    "about_me": "",
+                    "state": "online",
+                    "last_online": "",
+                },
+                {
+                    "id": 2,
+                    "name": "Bob",
+                    "type": "guest",
+                    "email": "",
+                    "about_me": "",
+                    "state": "offline",
+                    "last_online": "",
+                },
             ]
         )
         logger.warning("Returning mock user data due to database error")
@@ -162,7 +224,14 @@ def create_user():
         env_id = env_row[0]
         cursor.execute(
             "INSERT INTO user (username, email, about_me, state, type, environment_id) VALUES (%s, %s, %s, %s, %s, %s)",
-            (data["name"], data.get("email", ""), data.get("about_me", ""), state_id, type_id, env_id)
+            (
+                data["name"],
+                data.get("email", ""),
+                data.get("about_me", ""),
+                state_id,
+                type_id,
+                env_id,
+            ),
         )
         db.commit()
         new_id = cursor.lastrowid
@@ -225,6 +294,7 @@ def delete_user(user_id):
     except Exception as e:
         logger.error(f"Error deleting user: {str(e)}")
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/api/containers")
 def get_containers():
@@ -430,6 +500,11 @@ def get_events():
     return jsonify(recent_events)
 
 
+@app.route("/api/situational-awareness")
+def get_sa():
+    return jsonify(recent_sa[0] if recent_sa else {})
+
+
 @app.route("/api/devices")
 def get_devices():
     try:
@@ -447,9 +522,21 @@ def get_devices():
             JOIN environment e ON d.environment_id = e.id
             WHERE e.name = %s
             """,
-            (ALFR3D_ENV_NAME,)
+            (ALFR3D_ENV_NAME,),
         )
-        devices = [{"id": row[0], "name": row[1], "ip": row[2], "mac": row[3], "state": row[4], "type": row[5], "user": row[6], "last_online": str(row[7])} for row in cursor.fetchall()]
+        devices = [
+            {
+                "id": row[0],
+                "name": row[1],
+                "ip": row[2],
+                "mac": row[3],
+                "state": row[4],
+                "type": row[5],
+                "user": row[6],
+                "last_online": str(row[7]),
+            }
+            for row in cursor.fetchall()
+        ]
         db.close()
         return jsonify(devices)
     except Exception as e:
@@ -494,7 +581,15 @@ def create_device():
                 user_id = user_row[0]
         cursor.execute(
             "INSERT INTO device (name, IP, MAC, state, device_type, user_id, environment_id) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-            (data["name"], data.get("ip", "10.0.0.125"), data.get("mac", "00:00:00:00:00:00"), state_id, type_id, user_id, env_id)
+            (
+                data["name"],
+                data.get("ip", "10.0.0.125"),
+                data.get("mac", "00:00:00:00:00:00"),
+                state_id,
+                type_id,
+                user_id,
+                env_id,
+            ),
         )
         db.commit()
         new_id = cursor.lastrowid
@@ -594,7 +689,9 @@ def create_quip():
             host=MYSQL_DATABASE, user=MYSQL_USER, password=MYSQL_PSWD, database=MYSQL_DB
         )
         cursor = db.cursor()
-        cursor.execute("INSERT INTO quips (type, quips) VALUES (%s, %s)", (data["type"], data["quips"]))
+        cursor.execute(
+            "INSERT INTO quips (type, quips) VALUES (%s, %s)", (data["type"], data["quips"])
+        )
         db.commit()
         new_id = cursor.lastrowid
         db.close()
@@ -614,7 +711,10 @@ def update_quip(quip_id):
             host=MYSQL_DATABASE, user=MYSQL_USER, password=MYSQL_PSWD, database=MYSQL_DB
         )
         cursor = db.cursor()
-        cursor.execute("UPDATE quips SET type = %s, quips = %s WHERE id = %s", (data["type"], data["quips"], quip_id))
+        cursor.execute(
+            "UPDATE quips SET type = %s, quips = %s WHERE id = %s",
+            (data["type"], data["quips"], quip_id),
+        )
         db.commit()
         db.close()
         return jsonify({"id": quip_id, "type": data["type"], "quips": data["quips"]})
@@ -648,7 +748,7 @@ def get_weather():
         cursor = db.cursor()
         cursor.execute(
             "SELECT id, name, latitude, longitude, city, state, country, IP, low, high, description, sunrise, sunset, pressure, humidity, manual_override, manual_location_override FROM environment WHERE name = %s",
-            (ALFR3D_ENV_NAME,)
+            (ALFR3D_ENV_NAME,),
         )
         row = cursor.fetchone()
         db.close()
@@ -662,7 +762,7 @@ def get_weather():
                 "description": row[10],
                 "sunrise": str(row[11]) if row[11] else None,
                 "sunset": str(row[12]) if row[12] else None,
-                "humidity": row[14]
+                "humidity": row[14],
             }
             return jsonify(weather)
         else:
@@ -681,20 +781,33 @@ def get_environment():
         cursor = db.cursor()
         cursor.execute(
             "SELECT id, name, latitude, longitude, city, state, country, IP, low, high, description, sunrise, sunset, pressure, humidity, manual_override, manual_location_override FROM environment WHERE name = %s",
-            (ALFR3D_ENV_NAME,)
+            (ALFR3D_ENV_NAME,),
         )
         row = cursor.fetchone()
         db.close()
         logger.info(f"DEBUG: weather row = {row}")
         if row:
-            return jsonify({
-                "id": row[0], "name": row[1], "latitude": row[2], "longitude": row[3],
-                "city": row[4], "state": row[5], "country": row[6], "ip": row[7],
-                "temp_min": row[8], "temp_max": row[9], "description": row[10],
-                "sunrise": str(row[11]) if row[11] else None,
-                "sunset": str(row[12]) if row[12] else None,
-                "pressure": row[13], "humidity": row[14], "manual_override": row[15], "manual_location_override": row[16]
-            })
+            return jsonify(
+                {
+                    "id": row[0],
+                    "name": row[1],
+                    "latitude": row[2],
+                    "longitude": row[3],
+                    "city": row[4],
+                    "state": row[5],
+                    "country": row[6],
+                    "ip": row[7],
+                    "temp_min": row[8],
+                    "temp_max": row[9],
+                    "description": row[10],
+                    "sunrise": str(row[11]) if row[11] else None,
+                    "sunset": str(row[12]) if row[12] else None,
+                    "pressure": row[13],
+                    "humidity": row[14],
+                    "manual_override": row[15],
+                    "manual_location_override": row[16],
+                }
+            )
         else:
             return jsonify({"error": "Environment not found"}), 404
     except Exception as e:
@@ -715,8 +828,17 @@ def update_environment():
         updates = []
         params = []
         field_mappings = {
-            "latitude": "latitude", "longitude": "longitude", "city": "city", "state": "state", "country": "country", "IP": "IP",
-            "temp_min": "low", "temp_max": "high", "description": "description", "pressure": "pressure", "humidity": "humidity"
+            "latitude": "latitude",
+            "longitude": "longitude",
+            "city": "city",
+            "state": "state",
+            "country": "country",
+            "IP": "IP",
+            "temp_min": "low",
+            "temp_max": "high",
+            "description": "description",
+            "pressure": "pressure",
+            "humidity": "humidity",
         }
         location_fields = ["latitude", "longitude", "city", "state", "country", "IP"]
         manual_location_override = 1 if any(field in data for field in location_fields) else 0
@@ -732,7 +854,9 @@ def update_environment():
             cursor.execute(sql, params)
             db.commit()
         db.close()
-        return jsonify({"message": "Environment updated", "manual_location_override": manual_location_override})
+        return jsonify(
+            {"message": "Environment updated", "manual_location_override": manual_location_override}
+        )
     except Exception as e:
         logger.error(f"Error updating environment: {str(e)}")
         return jsonify({"error": str(e)}), 500
@@ -745,7 +869,10 @@ def reset_environment():
             host=MYSQL_DATABASE, user=MYSQL_USER, password=MYSQL_PSWD, database=MYSQL_DB
         )
         cursor = db.cursor()
-        cursor.execute("UPDATE environment SET manual_location_override = 0 WHERE name = %s", (ALFR3D_ENV_NAME,))
+        cursor.execute(
+            "UPDATE environment SET manual_location_override = 0 WHERE name = %s",
+            (ALFR3D_ENV_NAME,),
+        )
         db.commit()
         db.close()
         return jsonify({"message": "Environment reset to auto-detect"})
@@ -757,5 +884,5 @@ def reset_environment():
 if __name__ == "__main__":
     # Start event consumer thread
     threading.Thread(target=consume_events, daemon=True).start()
+    threading.Thread(target=consume_sa, daemon=True).start()
     app.run(host="0.0.0.0", port=5001, debug=False)
-
