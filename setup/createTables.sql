@@ -114,8 +114,8 @@ DROP TABLE IF EXISTS `environment`;
 CREATE TABLE `environment` (
   `id` INTEGER UNIQUE AUTO_INCREMENT,
   `name` VARCHAR(64) NULL DEFAULT 'guest',
-  `latitude` INTEGER NULL DEFAULT NULL,
-  `longitude` INTEGER NULL DEFAULT NULL,
+  `latitude` VARCHAR(32) NULL DEFAULT NULL,
+  `longitude` VARCHAR(32) NULL DEFAULT NULL,
   `city` VARCHAR(64) NULL DEFAULT NULL,
   `state` VARCHAR(64) NULL DEFAULT NULL,
   `country` VARCHAR(64) NULL DEFAULT NULL,
@@ -125,6 +125,10 @@ CREATE TABLE `environment` (
   `description` VARCHAR(64) NULL DEFAULT NULL,
   `sunrise` DATETIME NULL DEFAULT NULL,
   `sunset` DATETIME NULL DEFAULT NULL,
+  `pressure` INTEGER NULL DEFAULT NULL,
+  `humidity` INTEGER NULL DEFAULT NULL,
+  `manual_override` TINYINT NULL DEFAULT 0,
+  `manual_location_override` TINYINT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 );
 

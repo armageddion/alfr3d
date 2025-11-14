@@ -70,34 +70,35 @@ def checkLocation(method="freegeoip"):
     city = "unknown"
     ip = "unknown"
 
-    try:
-        cursor.execute("SELECT * from environment WHERE name = %s", (ALFR3D_ENV_NAME,))
-        data = cursor.fetchone()
+    cursor.execute("SELECT * from environment WHERE name = %s", (ALFR3D_ENV_NAME,))
+    data = cursor.fetchone()
+    if data and len(data) > 16 and data[16] == 1:
+        logger.info("Manual location override active, skipping auto location update")
+        db.close()
+        return [True, 0, 0]
 
-        if data:
-            logger.info("Found environment configuration for this host")
-            print(data)
-            country = data[6]
-            state = data[5]
-            city = data[4]
-        else:
-            logger.warning("Failed to find environment configuration for this host")
-            logger.info("Creating environment configuration for this host")
-            try:
-                cursor.execute("INSERT INTO environment (name) VALUES (%s)", (ALFR3D_ENV_NAME,))
-                db.commit()
-                logger.info("New environment created")
-            except Exception:
-                logger.error("Failed to add new environment to DB")
-                db.rollback()
-                db.close()
-                return [False, 0, 0]
-    except Exception:
-        logger.error("Environment check failed")
-        p = get_producer()
-        if p:
-            p.send("speak", b"Environment check failed")
-            p.flush()
+    if data:
+        logger.info("Found environment configuration for this host")
+        print(data)
+        country = data[6]
+        state = data[5]
+        city = data[4]
+    else:
+        logger.warning("Failed to find environment configuration for this host")
+        logger.info("Creating environment configuration for this host")
+        try:
+            cursor.execute("INSERT INTO environment (name) VALUES (%s)", (ALFR3D_ENV_NAME,))
+            db.commit()
+            logger.info("New environment created")
+        except Exception:
+            logger.error("Failed to add new environment to DB")
+            db.rollback()
+            db.close()
+            logger.error("Environment check failed")
+            p = get_producer()
+            if p:
+                p.send("speak", b"Environment check failed")
+                p.flush()
 
     # placeholders for my ip
     myipv4 = None
@@ -134,6 +135,10 @@ def checkLocation(method="freegeoip"):
         logger.info("getting API key for db-ip from DB")
         cursor.execute("SELECT * from config WHERE name = %s", ("dbip",))
         data = cursor.fetchone()
+        if data and len(data) > 15 and data[15] == 1:
+            logger.info("Manual override active, skipping auto location update")
+            db.close()
+            return [True, 0, 0]
 
         if data:
             logger.info("Found API key")
@@ -183,6 +188,10 @@ def checkLocation(method="freegeoip"):
         logger.info("getting API key for ipstack from DB")
         cursor.execute("SELECT * from config WHERE name = %s", ("ipstack",))
         data = cursor.fetchone()
+        if data and len(data) > 15 and data[15] == 1:
+            logger.info("Manual override active, skipping auto location update")
+            db.close()
+            return [True, 0, 0]
 
         if data:
             logger.info("Found API key")

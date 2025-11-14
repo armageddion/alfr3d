@@ -639,7 +639,123 @@ def delete_quip(quip_id):
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/weather")
+def get_weather():
+    try:
+        db = pymysql.connect(
+            host=MYSQL_DATABASE, user=MYSQL_USER, password=MYSQL_PSWD, database=MYSQL_DB
+        )
+        cursor = db.cursor()
+        cursor.execute(
+            "SELECT id, name, latitude, longitude, city, state, country, IP, low, high, description, sunrise, sunset, pressure, humidity, manual_override, manual_location_override FROM environment WHERE name = %s",
+            (ALFR3D_ENV_NAME,)
+        )
+        row = cursor.fetchone()
+        db.close()
+        if row:
+            weather = {
+                "city": row[4],
+                "state": row[5],
+                "country": row[6],
+                "low": row[8],
+                "high": row[9],
+                "description": row[10],
+                "sunrise": str(row[11]) if row[11] else None,
+                "sunset": str(row[12]) if row[12] else None,
+                "humidity": row[14]
+            }
+            return jsonify(weather)
+        else:
+            return jsonify({"error": "Environment not found"}), 404
+    except Exception as e:
+        logger.error(f"Error fetching weather: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/environment")
+def get_environment():
+    try:
+        db = pymysql.connect(
+            host=MYSQL_DATABASE, user=MYSQL_USER, password=MYSQL_PSWD, database=MYSQL_DB
+        )
+        cursor = db.cursor()
+        cursor.execute(
+            "SELECT id, name, latitude, longitude, city, state, country, IP, low, high, description, sunrise, sunset, pressure, humidity, manual_override, manual_location_override FROM environment WHERE name = %s",
+            (ALFR3D_ENV_NAME,)
+        )
+        row = cursor.fetchone()
+        db.close()
+        logger.info(f"DEBUG: weather row = {row}")
+        if row:
+            return jsonify({
+                "id": row[0], "name": row[1], "latitude": row[2], "longitude": row[3],
+                "city": row[4], "state": row[5], "country": row[6], "ip": row[7],
+                "temp_min": row[8], "temp_max": row[9], "description": row[10],
+                "sunrise": str(row[11]) if row[11] else None,
+                "sunset": str(row[12]) if row[12] else None,
+                "pressure": row[13], "humidity": row[14], "manual_override": row[15], "manual_location_override": row[16]
+            })
+        else:
+            return jsonify({"error": "Environment not found"}), 404
+    except Exception as e:
+        logger.error(f"Error fetching environment: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/environment", methods=["PUT"])
+def update_environment():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+    try:
+        db = pymysql.connect(
+            host=MYSQL_DATABASE, user=MYSQL_USER, password=MYSQL_PSWD, database=MYSQL_DB
+        )
+        cursor = db.cursor()
+        updates = []
+        params = []
+        field_mappings = {
+            "latitude": "latitude", "longitude": "longitude", "city": "city", "state": "state", "country": "country", "IP": "IP",
+            "temp_min": "low", "temp_max": "high", "description": "description", "pressure": "pressure", "humidity": "humidity"
+        }
+        location_fields = ["latitude", "longitude", "city", "state", "country", "IP"]
+        manual_location_override = 1 if any(field in data for field in location_fields) else 0
+        for field, db_field in field_mappings.items():
+            if field in data:
+                updates.append(f"{db_field} = %s")
+                params.append(data[field])
+        updates.append("manual_location_override = %s")
+        params.append(manual_location_override)
+        if updates:
+            params.append(ALFR3D_ENV_NAME)
+            sql = f"UPDATE environment SET {', '.join(updates)} WHERE name = %s"
+            cursor.execute(sql, params)
+            db.commit()
+        db.close()
+        return jsonify({"message": "Environment updated", "manual_location_override": manual_location_override})
+    except Exception as e:
+        logger.error(f"Error updating environment: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/environment/reset", methods=["POST"])
+def reset_environment():
+    try:
+        db = pymysql.connect(
+            host=MYSQL_DATABASE, user=MYSQL_USER, password=MYSQL_PSWD, database=MYSQL_DB
+        )
+        cursor = db.cursor()
+        cursor.execute("UPDATE environment SET manual_location_override = 0 WHERE name = %s", (ALFR3D_ENV_NAME,))
+        db.commit()
+        db.close()
+        return jsonify({"message": "Environment reset to auto-detect"})
+    except Exception as e:
+        logger.error(f"Error resetting environment: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == "__main__":
     # Start event consumer thread
     threading.Thread(target=consume_events, daemon=True).start()
     app.run(host="0.0.0.0", port=5001, debug=False)
+

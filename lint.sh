@@ -2,13 +2,24 @@
 
 # Linting script for Alfr3d project
 
-echo "Running linting on Python services..."
+echo "Running linting on all services..."
 
-# Frontend
+# Frontend (Node.js)
 echo "Linting service_frontend..."
 cd services/service_frontend
-flake8 app/ tests/ --max-line-length=100 --ignore=E203,W503
-black --check --diff app/ tests/
+npm run lint
+
+# API service
+echo "Linting service_api..."
+cd ../service_api
+flake8 app.py --max-line-length=100 --ignore=E203,W503
+black --check --diff app.py
+
+# Daemon service
+echo "Linting service_daemon..."
+cd ../service_daemon
+flake8 alfr3ddaemon.py daemon.py utils/ --max-line-length=100 --ignore=E203,W503
+black --check --diff alfr3ddaemon.py daemon.py utils/
 
 # User service
 echo "Linting service_user..."

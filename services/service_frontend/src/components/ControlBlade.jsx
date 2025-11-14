@@ -67,7 +67,7 @@ const ControlBlade = ({ device, onClose }) => {
               <div>
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-300">Temperature</span>
-                  <span className="text-cyan-400 font-mono">72°F</span>
+                  <span className="text-cyan-400 font-mono">22°C</span>
                 </div>
                 <div className="flex space-x-2">
                   <button className="flex-1 py-2 bg-slate-700 rounded-lg text-gray-300 hover:bg-slate-600 transition-colors">-</button>

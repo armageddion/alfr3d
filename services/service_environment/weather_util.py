@@ -152,6 +152,7 @@ def getWeather(lat, lon):
         )
         cursor.execute("SELECT * FROM environment WHERE name = %s", (ALFR3D_ENV_NAME,))
         env_data = cursor.fetchone()
+
         if not env_data:
             logger.error("Environment not found for " + ALFR3D_ENV_NAME)
             db.close()
@@ -170,11 +171,11 @@ def getWeather(lat, lon):
 
     db.close()
 
-    # update ESL
-    producer = KafkaProducer(bootstrap_servers=[KAFKA_URL])
-    producer.send(
-        "danavation", key=b"curr-temp", value=bytes(str(weatherData["main"]["temp"]), "utf-8")
-    )
+    # # update ESL
+    # producer = KafkaProducer(bootstrap_servers=[KAFKA_URL])
+    # producer.send(
+    #     "danavation", key=b"curr-temp", value=bytes(str(weatherData["main"]["temp"]), "utf-8")
+    # )
 
     # Subjective weather
     badDay = []
@@ -217,6 +218,10 @@ def getWeather(lat, lon):
 
     ampm = strftime("%p", localtime())
 
+    producer = get_producer()
+    if not producer:
+        logger.error("No Kafka producer available, cannot speak weather")
+        return False
     if badDay[0]:
         producer.send("speak", b"I am afraid I don't have good news.")
         greeting += "indicate "

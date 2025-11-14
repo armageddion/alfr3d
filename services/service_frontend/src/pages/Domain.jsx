@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import Blueprint from '../components/Blueprint';
 import PersonnelRoster from '../components/PersonnelRoster';
+import EnvironmentSettings from '../components/EnvironmentSettings';
 import ControlBlade from '../components/ControlBlade';
 
 const Domain = () => {
@@ -24,7 +25,7 @@ const Domain = () => {
         >
           ALFR3D Domain
         </motion.h1>
-        
+
         {/* Sub-navigation */}
         <div className="flex justify-center mb-8">
           <div className="glass rounded-full p-1 flex space-x-1">
@@ -48,9 +49,19 @@ const Domain = () => {
             >
               Personnel
             </button>
+            <button
+              onClick={() => setActiveView('environment')}
+              className={`px-6 py-2 rounded-full transition-all duration-300 ${
+                activeView === 'environment'
+                  ? 'bg-cyan-400/20 text-cyan-400 drop-shadow-lg'
+                  : 'text-gray-400 hover:text-cyan-400'
+              }`}
+            >
+              Environment
+            </button>
           </div>
         </div>
-        
+
         <div className="relative">
           {activeView === 'blueprint' && (
             <Blueprint onDeviceSelect={setSelectedDevice} />
@@ -58,7 +69,8 @@ const Domain = () => {
           {activeView === 'personnel' && (
             <PersonnelRoster />
           )}
-          
+          {activeView === 'environment' && <EnvironmentSettings />}
+
           <ControlBlade device={selectedDevice} onClose={() => setSelectedDevice(null)} />
         </div>
       </div>
