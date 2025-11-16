@@ -12,8 +12,13 @@ const PersonnelRoster = () => {
   const [newDevice, setNewDevice] = useState({ name: '', type: 'guest', ip: '', mac: '', user: '' });
   const [showAddUser, setShowAddUser] = useState(false);
   const [showAddDevice, setShowAddDevice] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [userDevices, setUserDevices] = useState([]);
+  const [deviceHistory, setDeviceHistory] = useState([]);
+  const [showDeviceHistory, setShowDeviceHistory] = useState(false);
 
   useEffect(() => {
+    console.log('PersonnelRoster component mounted');
     fetchUsers();
     fetchDevices();
   }, []);
@@ -144,6 +149,42 @@ const PersonnelRoster = () => {
     }
   };
 
+  const handleUserClick = async (user) => {
+    console.log('handleUserClick called with user:', user);
+    console.log('Setting selectedUser to:', user);
+    setSelectedUser(user);
+    setUserDevices([]);
+    setShowDeviceHistory(false);
+    console.log('State should be updated now');
+    try {
+      const response = await fetch(API_BASE_URL + '/api/users/' + user.id + '/devices');
+      const devices = await response.json();
+      console.log('Received devices:', devices);
+      console.log('Setting userDevices to:', devices);
+      setUserDevices(devices);
+      console.log('All state updates complete');
+    } catch (error) {
+      console.error('Error fetching user devices:', error);
+    }
+  };
+
+  const handleDeviceHistoryClick = async (device) => {
+    console.log('handleDeviceHistoryClick called with device:', device);
+    try {
+      const response = await fetch(API_BASE_URL + '/api/devices/' + device.id + '/history');
+      const history = await response.json();
+      console.log('Received history:', history);
+      console.log('Setting deviceHistory and showDeviceHistory');
+      setDeviceHistory(history);
+      setShowDeviceHistory(true);
+      console.log('Device history state updated');
+    } catch (error) {
+      console.error('Error fetching device history:', error);
+    }
+  };
+
+  console.log('Rendering PersonnelRoster with:', { selectedUser, userDevices: userDevices.length, showDeviceHistory });
+
   return (
     <div className="space-y-8">
       {/* Users Section */}
@@ -165,19 +206,29 @@ const PersonnelRoster = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1, duration: 0.5 }}
-              className="glass rounded-2xl p-6 border border-cyan-500/30 bg-slate-800/20"
+              className="glass rounded-2xl p-6 border border-cyan-500/30 bg-slate-800/20 cursor-pointer hover:bg-slate-700/30 transition-colors"
+              onClick={() => {
+                console.log('User card clicked!');
+                handleUserClick(user);
+              }}
             >
               <div className="flex items-center justify-between mb-4">
                   <User className={'w-6 h-6 ' + (user.type !== 'guest' ? 'text-green-400' : 'text-yellow-400')} />
                 <div className="flex space-x-2">
                   <button
-                    onClick={() => handleEditUser(user)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditUser(user);
+                    }}
                     className="p-1 text-cyan-400 hover:bg-cyan-400/20 rounded"
                   >
                     <Edit className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleDeleteUser(user.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteUser(user.id);
+                    }}
                     className="p-1 text-red-400 hover:bg-red-400/20 rounded"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -317,19 +368,29 @@ const PersonnelRoster = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1, duration: 0.5 }}
-              className="glass rounded-2xl p-6 border border-cyan-500/30 bg-slate-800/20"
+              className="glass rounded-2xl p-6 border border-cyan-500/30 bg-slate-800/20 cursor-pointer hover:bg-slate-700/30 transition-colors"
+                  onClick={() => {
+                    console.log('User device card clicked!');
+                    handleDeviceHistoryClick(device);
+                  }}
             >
               <div className="flex items-center justify-between mb-4">
                 <Monitor className="w-6 h-6 text-cyan-400" />
                 <div className="flex space-x-2">
                   <button
-                    onClick={() => handleEditDevice(device)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditDevice(device);
+                    }}
                     className="p-1 text-cyan-400 hover:bg-cyan-400/20 rounded"
                   >
                     <Edit className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleDeleteDevice(device.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteDevice(device.id);
+                    }}
                     className="p-1 text-red-400 hover:bg-red-400/20 rounded"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -468,6 +529,102 @@ const PersonnelRoster = () => {
                   Cancel
                 </button>
               </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* User Devices Section */}
+        {selectedUser && (
+          <div className="mt-8">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-cyan-400">
+                Devices for {selectedUser.name}
+              </h3>
+              <button
+                onClick={() => setSelectedUser(null)}
+                className="text-gray-400 hover:text-cyan-400 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {userDevices.map((device, index) => (
+                <motion.div
+                  key={device.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1, duration: 0.5 }}
+                  className="glass rounded-2xl p-4 border border-cyan-500/30 bg-slate-800/20 cursor-pointer hover:bg-slate-700/30 transition-colors"
+              onClick={() => {
+                console.log('Device card clicked!');
+                handleDeviceHistoryClick(device);
+              }}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <Monitor className="w-5 h-5 text-cyan-400" />
+                    <span className="text-xs text-cyan-400 uppercase">{device.type}</span>
+                  </div>
+                  <h4 className="text-sm font-semibold text-gray-200 mb-2">{device.name}</h4>
+                  <div className="text-xs text-gray-400 space-y-1">
+                    <div>IP: {device.ip}</div>
+                    <div>MAC: {device.mac}</div>
+                    <div>State: {device.state}</div>
+                    <div>Last Online: {device.last_online}</div>
+                  </div>
+                </motion.div>
+              ))}
+              {userDevices.length === 0 && (
+                <div className="col-span-full text-center text-gray-400 py-8">
+                  No devices found for this user
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Device History Section */}
+        {showDeviceHistory && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-8 glass rounded-2xl p-6 border border-cyan-500/30 bg-slate-800/20"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-cyan-400">Device History</h3>
+              <button
+                onClick={() => setShowDeviceHistory(false)}
+                className="text-gray-400 hover:text-white text-xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {deviceHistory.map((entry, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="border-l-4 border-cyan-400 pl-4 py-3 bg-slate-700/20 rounded-r"
+                >
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="text-cyan-400 font-medium">{entry.timestamp}</span>
+                    <span className="text-gray-400">{entry.state}</span>
+                  </div>
+                  <div className="text-sm text-gray-300 space-y-1">
+                    <div>Name: <span className="text-white">{entry.name}</span></div>
+                    <div>IP: <span className="text-white">{entry.ip}</span></div>
+                    <div>MAC: <span className="text-white">{entry.mac}</span></div>
+                    {entry.user && <div>User: <span className="text-white">{entry.user}</span></div>}
+                  </div>
+                </motion.div>
+              ))}
+              {deviceHistory.length === 0 && (
+                <div className="text-center text-gray-400 py-8">
+                  No history found for this device
+                </div>
+              )}
             </div>
           </motion.div>
         )}

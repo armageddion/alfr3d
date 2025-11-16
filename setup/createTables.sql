@@ -48,6 +48,26 @@ CREATE TABLE `device` (
 );
 
 -- ---
+-- Table 'device_history'
+--
+-- ---
+
+DROP TABLE IF EXISTS `device_history`;
+
+CREATE TABLE `device_history` (
+  `device_id` INTEGER NOT NULL,
+  `name` VARCHAR(128) NULL DEFAULT NULL,
+  `timestamp` DATETIME NOT NULL,
+  `IP` VARCHAR(15) NULL DEFAULT NULL,
+  `MAC` VARCHAR(17) NULL DEFAULT NULL,
+  `state` INTEGER NULL DEFAULT NULL,
+  `last_online` DATETIME NULL DEFAULT NULL,
+  `environment_id` INTEGER NULL DEFAULT NULL,
+  `device_type` INTEGER NULL DEFAULT NULL,
+  `user_id` INTEGER NULL DEFAULT NULL
+);
+
+-- ---
 -- Table 'user_types'
 -- 
 -- ---
@@ -170,6 +190,33 @@ ALTER TABLE `device` ADD FOREIGN KEY (environment_id) REFERENCES `environment` (
 ALTER TABLE `device` ADD FOREIGN KEY (device_type) REFERENCES `device_types` (`id`);
 ALTER TABLE `device` ADD FOREIGN KEY (user_id) REFERENCES `user` (`id`);
 ALTER TABLE `routines` ADD FOREIGN KEY (environment_id) REFERENCES `environment` (`id`);
+ALTER TABLE `device_history` ADD FOREIGN KEY (device_id) REFERENCES `device` (`id`);
+ALTER TABLE `device_history` ADD FOREIGN KEY (environment_id) REFERENCES `environment` (`id`);
+ALTER TABLE `device_history` ADD FOREIGN KEY (user_id) REFERENCES `user` (`id`);
+
+-- ---
+-- Triggers
+-- ---
+
+DELIMITER ;;
+
+CREATE TRIGGER `before_device_update` BEFORE UPDATE ON `device`
+FOR EACH ROW
+BEGIN
+  INSERT INTO device_history
+  SET device_id = OLD.id,
+      name = OLD.name,
+      timestamp = NOW(),
+      IP = OLD.IP,
+      MAC = OLD.MAC,
+      state = OLD.state,
+      last_online = OLD.last_online,
+      environment_id = OLD.environment_id,
+      device_type = OLD.device_type,
+      user_id = OLD.user_id;
+END;;
+
+DELIMITER ;
 
 -- ---
 -- set dome initial values 

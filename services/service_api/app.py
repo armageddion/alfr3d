@@ -663,6 +663,83 @@ def delete_device(device_id):
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/users/<int:user_id>/devices")
+def get_user_devices(user_id):
+    try:
+        db = pymysql.connect(
+            host=MYSQL_DATABASE, user=MYSQL_USER, password=MYSQL_PSWD, database=MYSQL_DB
+        )
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            SELECT d.id, d.name, d.IP, d.MAC, s.state, dt.type, d.last_online
+            FROM device d
+            JOIN states s ON d.state = s.id
+            JOIN device_types dt ON d.device_type = dt.id
+            WHERE d.user_id = %s
+            """,
+            (user_id,),
+        )
+        devices = [
+            {
+                "id": row[0],
+                "name": row[1],
+                "ip": row[2],
+                "mac": row[3],
+                "state": row[4],
+                "type": row[5],
+                "last_online": str(row[6]),
+            }
+            for row in cursor.fetchall()
+        ]
+        db.close()
+        return jsonify(devices)
+    except Exception as e:
+        logger.error(f"Error fetching user devices: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/devices/<int:device_id>/history")
+def get_device_history(device_id):
+    try:
+        db = pymysql.connect(
+            host=MYSQL_DATABASE, user=MYSQL_USER, password=MYSQL_PSWD, database=MYSQL_DB
+        )
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            SELECT
+                dh.timestamp, dh.name, dh.IP, dh.MAC,
+                s.state, dt.type, u.username, dh.last_online
+            FROM device_history dh
+            LEFT JOIN states s ON dh.state = s.id
+            LEFT JOIN device_types dt ON dh.device_type = dt.id
+            LEFT JOIN user u ON dh.user_id = u.id
+            WHERE dh.device_id = %s
+            ORDER BY dh.timestamp DESC
+            """,
+            (device_id,),
+        )
+        history = [
+            {
+                "timestamp": str(row[0]),
+                "name": row[1],
+                "ip": row[2],
+                "mac": row[3],
+                "state": row[4],
+                "type": row[5],
+                "user": row[6],
+                "last_online": str(row[7]),
+            }
+            for row in cursor.fetchall()
+        ]
+        db.close()
+        return jsonify(history)
+    except Exception as e:
+        logger.error(f"Error fetching device history: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/quips", methods=["GET"])
 def get_quips():
     try:

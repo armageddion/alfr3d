@@ -309,13 +309,13 @@ class MyDaemon:
             )
             cursor = db.cursor()
             cursor.execute(
-                "SELECT description, low, high FROM environment WHERE name = %s", (ENV_NAME,)
+                "SELECT city, description, low, high FROM environment WHERE name = %s", (ENV_NAME,)
             )
             row = cursor.fetchone()
             db.close()
             if row:
-                desc, low, high = row
-                content = f"Weather: {desc}, {low}°C to {high}°C"
+                city, desc, low, high = row
+                content = f"{city}: {desc}, {low}°C to {high}°C"
                 return {"mode": "weather", "content": content, "priority": 4}
         except Exception as e:
             logger.error("Weather check error: " + str(e))
