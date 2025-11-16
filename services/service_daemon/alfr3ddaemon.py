@@ -284,10 +284,15 @@ class MyDaemon:
             count = cursor.fetchone()[0]
             if count > 0:
                 hour = datetime.now().hour
-                time_of_day = "day" if 6 <= hour < 18 else "night"
+                if 6 <= hour < 18:
+                    time_of_day = "day"
+                elif 18 <= hour < 22:
+                    time_of_day = "evening"
+                else:
+                    time_of_day = "night"
                 cursor.execute("SELECT description FROM environment WHERE name = %s", (ENV_NAME,))
                 desc_row = cursor.fetchone()
-                mood = "sunny" if desc_row and "clear" in desc_row[0].lower() else "rainy"
+                mood = desc_row + " kind of " + time_of_day
                 playlist = spotify_utils.get_playlist_suggestion(time_of_day, mood)
                 content = f"Play {playlist}"
                 return {"mode": "gathering", "content": content, "priority": 3}
