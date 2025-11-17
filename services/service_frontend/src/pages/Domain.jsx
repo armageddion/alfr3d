@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-import Blueprint from '../components/Blueprint';
+import { useState, lazy, Suspense } from 'react';
 import PersonnelRoster from '../components/PersonnelRoster';
 import EnvironmentSettings from '../components/EnvironmentSettings';
 import ControlBlade from '../components/ControlBlade';
+
+const Blueprint = lazy(() => import('../components/Blueprint'));
 
 const Domain = () => {
   const [activeView, setActiveView] = useState('blueprint');
@@ -21,7 +22,7 @@ const Domain = () => {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="text-4xl font-bold text-cyan-400 mb-8 text-center drop-shadow-lg"
+          className="text-4xl font-bold text-primary mb-8 text-center drop-shadow-lg"
         >
           ALFR3D Domain
         </motion.h1>
@@ -33,8 +34,8 @@ const Domain = () => {
               onClick={() => setActiveView('blueprint')}
               className={`px-6 py-2 rounded-full transition-all duration-300 ${
                 activeView === 'blueprint'
-                  ? 'bg-cyan-400/20 text-cyan-400 drop-shadow-lg'
-                  : 'text-gray-400 hover:text-cyan-400'
+                  ? 'bg-primary/20 text-primary drop-shadow-lg'
+                  : 'text-text-tertiary hover:text-primary'
               }`}
             >
               Blueprint
@@ -43,8 +44,8 @@ const Domain = () => {
               onClick={() => setActiveView('personnel')}
               className={`px-6 py-2 rounded-full transition-all duration-300 ${
                 activeView === 'personnel'
-                  ? 'bg-cyan-400/20 text-cyan-400 drop-shadow-lg'
-                  : 'text-gray-400 hover:text-cyan-400'
+                  ? 'bg-primary/20 text-primary drop-shadow-lg'
+                  : 'text-text-tertiary hover:text-primary'
               }`}
             >
               Personnel
@@ -53,8 +54,8 @@ const Domain = () => {
               onClick={() => setActiveView('environment')}
               className={`px-6 py-2 rounded-full transition-all duration-300 ${
                 activeView === 'environment'
-                  ? 'bg-cyan-400/20 text-cyan-400 drop-shadow-lg'
-                  : 'text-gray-400 hover:text-cyan-400'
+                  ? 'bg-primary/20 text-primary drop-shadow-lg'
+                  : 'text-text-tertiary hover:text-primary'
               }`}
             >
               Environment
@@ -64,7 +65,9 @@ const Domain = () => {
 
         <div className="relative">
           {activeView === 'blueprint' && (
-            <Blueprint onDeviceSelect={setSelectedDevice} />
+            <Suspense fallback={<div className="text-center py-8">Loading Blueprint...</div>}>
+              <Blueprint onDeviceSelect={setSelectedDevice} />
+            </Suspense>
           )}
           {activeView === 'personnel' && (
             <PersonnelRoster />

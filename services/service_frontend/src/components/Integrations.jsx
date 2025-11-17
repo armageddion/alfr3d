@@ -15,25 +15,25 @@ const integrations = [
 const Integrations = () => {
   const getStatusColor = (status) => {
     switch (status) {
-      case 'connected': return 'text-green-400';
-      case 'requires_attention': return 'text-yellow-400';
-      case 'not_connected': return 'text-red-400';
-      default: return 'text-gray-400';
+      case 'connected': return 'text-success';
+      case 'requires_attention': return 'text-warning';
+      case 'not_connected': return 'text-error';
+      default: return 'text-text-tertiary';
     }
   };
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'connected': return <CheckCircle className="w-5 h-5 text-green-400" />;
-      case 'requires_attention': return <AlertTriangle className="w-5 h-5 text-yellow-400" />;
-      case 'not_connected': return <Settings className="w-5 h-5 text-red-400" />;
-      default: return <Settings className="w-5 h-5 text-gray-400" />;
+      case 'connected': return <CheckCircle className="w-5 h-5 text-success" />;
+      case 'requires_attention': return <AlertTriangle className="w-5 h-5 text-warning" />;
+      case 'not_connected': return <Settings className="w-5 h-5 text-error" />;
+      default: return <Settings className="w-5 h-5 text-text-tertiary" />;
     }
   };
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-cyan-400 mb-6 drop-shadow-lg">Third-Party Integrations</h2>
+      <h2 className="text-2xl font-bold text-primary mb-6 drop-shadow-lg">Third-Party Integrations</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {integrations.map((integration, index) => (
@@ -46,14 +46,14 @@ const Integrations = () => {
             className="glass rounded-2xl p-6 cursor-pointer"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-full bg-cyan-400/20 flex items-center justify-center text-cyan-400 drop-shadow-lg">
+              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary drop-shadow-lg">
                 <integration.icon className="w-6 h-6" />
               </div>
               {getStatusIcon(integration.status)}
             </div>
-            
-            <h3 className="text-lg font-semibold text-gray-200 mb-2">{integration.name}</h3>
-            <p className="text-sm text-gray-400 mb-4">{integration.description}</p>
+
+            <h3 className="text-lg font-semibold text-text-primary mb-2">{integration.name}</h3>
+            <p className="text-sm text-text-tertiary mb-4">{integration.description}</p>
             
             <div className="flex items-center justify-between">
               <span className={`text-sm font-medium ${getStatusColor(integration.status)}`}>
@@ -61,7 +61,7 @@ const Integrations = () => {
                  integration.status === 'requires_attention' ? 'Requires Attention' :
                  'Not Connected'}
               </span>
-              <button className="px-4 py-2 bg-slate-700/50 rounded-lg text-gray-300 hover:bg-slate-600/50 transition-colors">
+              <button className="px-4 py-2 bg-card/50 rounded-lg text-text-secondary hover:bg-card-hover/50 transition-colors">
                 {integration.status === 'not_connected' ? 'Integrate' : 'Configure'}
               </button>
             </div>

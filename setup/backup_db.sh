@@ -22,7 +22,7 @@ else
 fi
 
 # Run backup
-$DUMP_CMD -h$MYSQL_HOST -u$MYSQL_USER -p$MYSQL_PSWD $MYSQL_NAME > $BACKUP_FILE
+$DUMP_CMD -h$MYSQL_HOST -uroot -p$MYSQL_ROOT_PASSWORD $MYSQL_NAME > $BACKUP_FILE
 
 # Verify and cleanup
 if [ $? -eq 0 ]; then

@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { Save, RotateCcw, ToggleLeft, ToggleRight } from 'lucide-react';
 import { API_BASE_URL } from '../config';
@@ -83,9 +82,9 @@ const EnvironmentSettings = () => {
     return (
       <div className="glass rounded-lg p-6 mb-8">
         <div className="animate-pulse">
-          <div className="h-6 bg-slate-700 rounded mb-4"></div>
-          <div className="h-4 bg-slate-700 rounded mb-2"></div>
-          <div className="h-4 bg-slate-700 rounded"></div>
+          <div className="h-6 bg-card rounded mb-4"></div>
+          <div className="h-4 bg-card rounded mb-2"></div>
+          <div className="h-4 bg-card rounded"></div>
         </div>
       </div>
     );
@@ -94,17 +93,17 @@ const EnvironmentSettings = () => {
   return (
     <div className="glass rounded-lg p-6 mb-8">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-cyan-400">Environment Settings</h2>
+        <h2 className="text-2xl font-bold text-primary">Environment Settings</h2>
         <div className="flex items-center space-x-4">
-          <span className="text-sm text-gray-400">
+          <span className="text-sm text-text-tertiary">
             {environment.manual_location_override ? 'Manual' : 'Auto'}
           </span>
           <button
             onClick={handleToggleManual}
             className={`p-2 rounded-full transition-colors ${
               environment.manual_location_override
-                ? 'bg-cyan-400/20 text-cyan-400'
-                : 'bg-gray-600/20 text-gray-400'
+                ? 'bg-primary/20 text-primary'
+                : 'bg-border-secondary/20 text-text-tertiary'
             }`}
           >
             {environment.manual_location_override ? (
@@ -118,95 +117,95 @@ const EnvironmentSettings = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">City</label>
+          <label className="block text-sm font-medium text-text-secondary mb-1">City</label>
           <input
             type="text"
             value={environment.city}
             onChange={(e) => setEnvironment({ ...environment, city: e.target.value })}
             disabled={!environment.manual_location_override}
-            className="w-full p-2 bg-slate-700 rounded text-gray-200 disabled:opacity-50"
+            className="w-full p-2 bg-card rounded text-text-primary disabled:opacity-50"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">State</label>
+          <label className="block text-sm font-medium text-text-secondary mb-1">State</label>
           <input
             type="text"
             value={environment.state}
             onChange={(e) => setEnvironment({ ...environment, state: e.target.value })}
             disabled={!environment.manual_location_override}
-            className="w-full p-2 bg-slate-700 rounded text-gray-200 disabled:opacity-50"
+            className="w-full p-2 bg-card rounded text-text-primary disabled:opacity-50"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Country</label>
+          <label className="block text-sm font-medium text-text-secondary mb-1">Country</label>
           <input
             type="text"
             value={environment.country}
             onChange={(e) => setEnvironment({ ...environment, country: e.target.value })}
             disabled={!environment.manual_location_override}
-            className="w-full p-2 bg-slate-700 rounded text-gray-200 disabled:opacity-50"
+            className="w-full p-2 bg-card rounded text-text-primary disabled:opacity-50"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Latitude</label>
+          <label className="block text-sm font-medium text-text-secondary mb-1">Latitude</label>
           <input
             type="number"
             step="0.0001"
             value={environment.latitude}
             onChange={(e) => setEnvironment({ ...environment, latitude: e.target.value })}
             disabled={!environment.manual_location_override}
-            className="w-full p-2 bg-slate-700 rounded text-gray-200 disabled:opacity-50"
+            className="w-full p-2 bg-card rounded text-text-primary disabled:opacity-50"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Longitude</label>
+          <label className="block text-sm font-medium text-text-secondary mb-1">Longitude</label>
           <input
             type="number"
             step="0.0001"
             value={environment.longitude}
             onChange={(e) => setEnvironment({ ...environment, longitude: e.target.value })}
             disabled={!environment.manual_location_override}
-            className="w-full p-2 bg-slate-700 rounded text-gray-200 disabled:opacity-50"
+            className="w-full p-2 bg-card rounded text-text-primary disabled:opacity-50"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Min Temp (°C)</label>
+          <label className="block text-sm font-medium text-text-secondary mb-1">Min Temp (°C)</label>
           <input
             type="number"
             step="0.1"
             value={environment.temp_min}
             disabled={true}
-            className="w-full p-2 bg-slate-700 rounded text-gray-200 disabled:opacity-50"
+            className="w-full p-2 bg-card rounded text-text-primary disabled:opacity-50"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">Max Temp (°C)</label>
+          <label className="block text-sm font-medium text-text-secondary mb-1">Max Temp (°C)</label>
           <input
             type="number"
             step="0.1"
             value={environment.temp_max}
             disabled={true}
-            className="w-full p-2 bg-slate-700 rounded text-gray-200 disabled:opacity-50"
+            className="w-full p-2 bg-card rounded text-text-primary disabled:opacity-50"
           />
         </div>
          <div>
-           <label className="block text-sm font-medium text-gray-300 mb-1">Pressure (hPa)</label>
+           <label className="block text-sm font-medium text-text-secondary mb-1">Pressure (hPa)</label>
            <input
              type="number"
              step="0.1"
              value={environment.pressure}
              disabled={true}
-             className="w-full p-2 bg-slate-700 rounded text-gray-200 disabled:opacity-50"
+             className="w-full p-2 bg-card rounded text-text-primary disabled:opacity-50"
            />
          </div>
          <div>
-           <label className="block text-sm font-medium text-gray-300 mb-1">Humidity (%)</label>
+           <label className="block text-sm font-medium text-text-secondary mb-1">Humidity (%)</label>
            <input
              type="number"
              step="0.1"
              value={environment.humidity}
              disabled={true}
-             className="w-full p-2 bg-slate-700 rounded text-gray-200 disabled:opacity-50"
+             className="w-full p-2 bg-card rounded text-text-primary disabled:opacity-50"
            />
          </div>
        </div>
@@ -215,14 +214,14 @@ const EnvironmentSettings = () => {
         <button
           onClick={handleSave}
           disabled={!environment.manual_location_override || saving}
-          className="flex items-center space-x-2 px-4 py-2 bg-green-400/20 border border-green-400 rounded-lg text-green-400 hover:bg-green-400/30 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center space-x-2 px-4 py-2 bg-success/20 border border-success rounded-lg text-success hover:bg-success/30 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Save className="w-4 h-4" />
           <span>{saving ? 'Saving...' : 'Save'}</span>
         </button>
         <button
           onClick={handleReset}
-          className="flex items-center space-x-2 px-4 py-2 bg-orange-400/20 border border-orange-400 rounded-lg text-orange-400 hover:bg-orange-400/30"
+          className="flex items-center space-x-2 px-4 py-2 bg-warning/20 border border-warning rounded-lg text-warning hover:bg-warning/30"
         >
           <RotateCcw className="w-4 h-4" />
           <span>Reset to Auto</span>

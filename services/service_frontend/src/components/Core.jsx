@@ -5,9 +5,13 @@ import { Sun } from 'lucide-react';
 import Lottie from 'lottie-react';
 import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
+import { getTimeRatio, getSunAngle } from '../utils/timeUtils';
+import { useTheme } from '../utils/ThemeContext';
 
 // --- A simplified Satellite component ---
 const Satellite = ({ radius, angle, size, color, glowColor, children }) => {
+  // Satellite positioning math: Convert polar coordinates (radius, angle) to Cartesian (x, y)
+  // Center at 50% (middle of container), scale radius to fit within 0-100% range
   const x = 50 + (radius / 200) * 50 * Math.cos(angle);
   const y = 50 + (radius / 200) * 50 * Math.sin(angle);
 
@@ -37,14 +41,14 @@ const Core = () => {
   const [containers, setContainers] = useState([]);
   const [users, setUsers] = useState([]);
   const [sunAngle, setSunAngle] = useState(0);
-
-  const timeRatio = (new Date().getHours() * 60 + new Date().getMinutes()) / (24 * 60);
+  const { themeColors } = useTheme();
 
   useEffect(() => {
     // Corrected the path to be absolute from the public directory
     fetch('/lottie/logo.json')
       .then(response => response.json())
-      .then(data => setAnimationData(data));
+      .then(data => setAnimationData(data))
+      .catch(error => console.error('Error fetching animation data:', error));
   }, []);
 
   useEffect(() => {
@@ -81,7 +85,9 @@ const Core = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Effect to handle the random "thinking" rotation after the intro
+  // Animation logic: Random "thinking" rotation after intro finishes
+  // Generates random rotation angles (-30° to +30°) at irregular intervals (1-5 seconds)
+  // to simulate AI "thinking" behavior
   useEffect(() => {
     if (isIntroFinished) {
       let timeoutId;
@@ -99,20 +105,8 @@ const Core = () => {
   // Effect to update sun angle based on time
   useEffect(() => {
     const updateSunAngle = () => {
-      const now = new Date();
-      const timeRatio = (now.getHours() * 60 + now.getMinutes()) / (24 * 60);
-      let angle;
-      if (timeRatio >= 0.25 && timeRatio <= 0.75) {
-        // Day: upper half, -90° to 90°
-        angle = ((timeRatio - 0.25) / 0.5) * Math.PI - Math.PI / 2;
-      } else {
-        // Night: bottom half, 90° to 270°
-        if (timeRatio < 0.25) {
-          angle = (timeRatio / 0.25) * Math.PI + Math.PI / 2;
-        } else {
-          angle = ((timeRatio - 0.75) / 0.25) * Math.PI + Math.PI / 2;
-        }
-      }
+      const timeRatio = getTimeRatio();
+      const angle = getSunAngle(timeRatio);
       setSunAngle(angle);
     };
     updateSunAngle();
@@ -141,11 +135,13 @@ const Core = () => {
       </motion.div>
 
       {/* The Rings - Positioned on top of the Lottie animation */}
-      <div className="absolute top-1/2 left-1/2 w-[80%] h-[80%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-500/20"></div>
-      <div className="absolute top-1/2 left-1/2 w-[60%] h-[60%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-500/20"></div>
-      <div className="absolute top-1/2 left-1/2 w-[40%] h-[40%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-500/20"></div>
+      <div className="absolute top-1/2 left-1/2 w-[80%] h-[80%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/20"></div>
+      <div className="absolute top-1/2 left-1/2 w-[60%] h-[60%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/20"></div>
+      <div className="absolute top-1/2 left-1/2 w-[40%] h-[40%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/20"></div>
 
       {/* User Orbit - Middle ring */}
+      {/* Orbit calculations: Rotates the entire ring 360° over 45 seconds linearly
+         Users are positioned evenly around the circle based on their index */}
       <motion.div
         className="absolute top-0 left-0 w-full h-full"
         animate={{ rotate: 360 }}
@@ -158,13 +154,15 @@ const Core = () => {
             radius={120} // 60% ring radius
             angle={(index / users.length) * 2 * Math.PI}
             size={10}
-            color={user.type === 'guest' ? '#fbbf24' : '#10b981'}
-            glowColor={user.type === 'guest' ? '#fbbf24' : '#10b981'}
+            color={user.type === 'guest' ? themeColors.warning : themeColors.success}
+            glowColor={user.type === 'guest' ? themeColors.warning : themeColors.success}
           />
         ))}
       </motion.div>
 
       {/* Container Orbit - This div rotates on top of everything */}
+      {/* Orbit calculations: Rotates counter-clockwise (-360°) over 45 seconds
+         Containers positioned evenly around inner ring, color/size based on error count */}
       <motion.div
         className="absolute top-0 left-0 w-full h-full"
         animate={{ rotate: -360 }}
@@ -174,16 +172,16 @@ const Core = () => {
         {containers.map((container, index) => {
           let color, glowColor, size;
           if (container.errors === 0) {
-            color = '#10b981'; // Green for healthy
-            glowColor = '#10b981';
+            color = themeColors.success; // Green for healthy
+            glowColor = themeColors.success;
             size = 8;
           } else if (container.errors === 1) {
-            color = '#fbbf24'; // Yellow for unhealthy
-            glowColor = '#fbbf24';
+            color = themeColors.warning; // Yellow for unhealthy
+            glowColor = themeColors.warning;
             size = 10;
           } else {
-            color = '#ef4444'; // Red for critical
-            glowColor = '#ef4444';
+            color = themeColors.error; // Red for critical
+            glowColor = themeColors.error;
             size = 12;
           }
           return (
@@ -201,15 +199,15 @@ const Core = () => {
       
        {/* Sun Orbit - Positioned based on time */}
        <div className="absolute top-0 left-0 w-full h-full" style={{ zIndex: 10 }}>
-         <Satellite
-           radius={160} // 80% ring radius
-           angle={sunAngle}
-           size={24}
-           color="transparent"
-           glowColor="#fde047"
-         >
-           <Sun className="w-full h-full text-yellow-300"/>
-         </Satellite>
+          <Satellite
+            radius={160} // 80% ring radius
+            angle={sunAngle}
+            size={24}
+            color="transparent"
+            glowColor={themeColors.warning}
+          >
+            <Sun className="w-full h-full" style={{ color: themeColors.warning }}/>
+          </Satellite>
        </div>
     </div>
   );

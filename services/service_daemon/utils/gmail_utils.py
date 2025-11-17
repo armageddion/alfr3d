@@ -10,6 +10,7 @@ import logging
 
 logger = logging.getLogger("GmailUtils")
 
+
 def check_unread_emails():
     """
     Fetch unread emails on-demand.

@@ -10,6 +10,7 @@ import logging
 
 logger = logging.getLogger("SpotifyUtils")
 
+
 def get_playlist_suggestion(time_of_day, mood):
     """
     Suggest a playlist based on time and mood.
