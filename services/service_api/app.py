@@ -53,8 +53,12 @@ def consume_events() -> None:
                         logger.info("Polling for event message")
                         try:
                             data = json.loads(message.value.decode("utf-8"))
-                            recent_events.clear()
-                            recent_events.extend(data)
+                            if isinstance(data, list):
+                                recent_events.extend(data)
+                            else:
+                                recent_events.append(data)
+                            # Keep only the most recent 20 events
+                            recent_events[:] = recent_events[-20:]
                             logger.info(f"Received events: {data}")
                         except json.JSONDecodeError as e:
                             logger.error(f"Error processing event message: {str(e)}")
@@ -67,7 +71,9 @@ def consume_sa() -> None:
     try:
         logger.info(f"SA consumer bootstrap servers: {KAFKA_URL}")
         consumer = KafkaConsumer(
-            "situational-awareness", bootstrap_servers="kafka:9092", auto_offset_reset="latest"
+            "situational-awareness",
+            bootstrap_servers=KAFKA_URL,
+            auto_offset_reset="latest",
         )
         logger.info("Connected to Kafka situational-awareness topic")
         while True:
@@ -79,7 +85,10 @@ def consume_sa() -> None:
                         try:
                             data = json.loads(message.value.decode("utf-8"))
                             recent_sa.clear()
-                            recent_sa.extend(data)
+                            if isinstance(data, list):
+                                recent_sa.extend(data)
+                            else:
+                                recent_sa.append(data)
                             logger.info(f"Received SA: {data}")
                         except json.JSONDecodeError as e:
                             logger.error(f"Error processing SA message: {str(e)}")
@@ -378,7 +387,7 @@ def parse_docker_json(output: str) -> List[Dict[str, Any]]:
     for line in output.strip().split("\n"):
         if line.strip():
             try:
-    
+
                 containers.append(json.loads(line))
             except json.JSONDecodeError as e:
                 logger.warning(f"Error parsing JSON: {e}")
@@ -493,7 +502,7 @@ def get_containers():
             mem_percent = 0.0
 
             try:
-    
+
                 stats_output = run_docker_command(
                     [
                         "docker",
@@ -510,7 +519,7 @@ def get_containers():
                     parts = stats_line.split(",")
                     if len(parts) >= 2:
                         try:
-                
+
                             cpu_str = parts[0].rstrip("%")
                             mem_str = parts[1].rstrip("%")
                             cpu_percent = float(cpu_str) if cpu_str else 0.0
@@ -523,7 +532,7 @@ def get_containers():
             # Get container size for disk estimate
             disk_percent = 15.0  # Default
             try:
-    
+
                 size_output = run_docker_command(
                     [
                         "docker",
@@ -540,7 +549,7 @@ def get_containers():
                 size_str = size_output.strip()
                 if size_str:
                     try:
-            
+
                         # Parse size like "1.23MB (456MB)"
                         size_part = size_str.split(" ")[0]
                         if size_part.endswith("MB"):
@@ -629,7 +638,11 @@ def get_devices():
                     "type": row[5],
                     "user": row[6],
                     "last_online": str(row[7]),
-                    "position": {"x": row[8], "y": row[9]} if row[8] is not None and row[9] is not None else None,
+                    "position": (
+                        {"x": row[8], "y": row[9]}
+                        if row[8] is not None and row[9] is not None
+                        else None
+                    ),
                 }
             )
         db.close()
