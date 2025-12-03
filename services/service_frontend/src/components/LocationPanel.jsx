@@ -101,7 +101,7 @@ const LocationPanel = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="relative bg-fui-panel border border-fui-border rounded-none w-80"
+      className="relative bg-fui-panel border border-fui-border rounded-none"
     >
       {/* Corner Markers */}
       <div className="absolute -top-px -left-px w-3 h-3 border-t-2 border-l-2 border-fui-accent z-10" />

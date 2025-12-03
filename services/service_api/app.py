@@ -11,6 +11,7 @@ from kafka import KafkaConsumer, KafkaProducer
 from kafka.errors import KafkaError
 from flask import Flask, request, jsonify
 from typing import Dict, Any, List
+from datetime import datetime
 from flask_cors import CORS
 
 # current path from which python is executed
@@ -1201,6 +1202,45 @@ def update_environment():
         )
     except pymysql.Error as e:
         logger.error(f"Error updating environment: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/calendar/events")
+def get_calendar_events():
+    """
+    Retrieve calendar events for today.
+
+    Returns:
+        JSON: List of calendar events for today.
+    """
+    try:
+        db = pymysql.connect(
+            host=MYSQL_DATABASE, user=MYSQL_USER, password=MYSQL_PSWD, database=MYSQL_DB
+        )
+        cursor = db.cursor()
+        today = datetime.now().date()
+        cursor.execute(
+            """
+            SELECT title, start_time, end_time, address, notes FROM calendar_events
+            WHERE DATE(start_time) = %s
+            ORDER BY start_time ASC
+            """,
+            (today,),
+        )
+        events = [
+            {
+                "title": row[0],
+                "start_time": row[1].isoformat() if row[1] else None,
+                "end_time": row[2].isoformat() if row[2] else None,
+                "address": row[3],
+                "notes": row[4],
+            }
+            for row in cursor.fetchall()
+        ]
+        db.close()
+        return jsonify(events)
+    except pymysql.Error as e:
+        logger.error(f"Error fetching calendar events: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 

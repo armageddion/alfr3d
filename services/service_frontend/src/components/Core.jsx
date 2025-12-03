@@ -501,19 +501,18 @@ const Core = () => {
 
          {/* User Orbit - Outer ring */}
          {/* Orbit calculations: Tactical stuttering rotation over 30 seconds */}
-         <motion.div
-           className="absolute top-0 left-0 w-full h-full"
-           animate={{
-             rotate: [-360, -350, -360, -370, -360],
-             transition: {
-               duration: 30,
-               repeat: Infinity,
-               ease: "linear",
-               times: [0, 0.2, 0.4, 0.6, 1]
-             }
-           }}
-           style={{ zIndex: 10 }}
-         >
+          <motion.div
+            className="absolute top-0 left-0 w-full h-full"
+            animate={{
+              rotate: 360,
+              transition: {
+                duration: 30,
+                repeat: Infinity,
+                ease: "linear"
+              }
+            }}
+            style={{ zIndex: 10 }}
+          >
          {users.map((user, index) => (
            <Satellite
              key={`user-${user.name}`}
@@ -528,19 +527,18 @@ const Core = () => {
 
          {/* Alfr3d Devices Orbit - Middle ring */}
          {/* Orbit calculations: Tactical scanning rotation with stuttering */}
-         <motion.div
-           className="absolute top-0 left-0 w-full h-full"
-           animate={{
-             rotate: [360, 370, 360, 350, 360],
-             transition: {
-               duration: 60,
-               repeat: Infinity,
-               ease: "linear",
-               times: [0, 0.3, 0.5, 0.7, 1]
-             }
-           }}
-           style={{ zIndex: 10 }}
-         >
+          <motion.div
+            className="absolute top-0 left-0 w-full h-full"
+            animate={{
+              rotate: -360,
+              transition: {
+                duration: 60,
+                repeat: Infinity,
+                ease: "linear"
+              }
+            }}
+            style={{ zIndex: 10 }}
+          >
          {devices.filter(device => device.user === 'alfr3d').map((device, index) => {
            const Icon = getIcon(device.type);
            const deviceColor = device.state === 'online' ? themeColors.success : themeColors.warning;
@@ -561,19 +559,18 @@ const Core = () => {
 
          {/* Container Orbit - This div rotates on top of everything */}
         {/* Orbit calculations: Tactical counter-clockwise rotation with scanning patterns */}
-        <motion.div
-          className="absolute top-0 left-0 w-full h-full"
-          animate={{
-            rotate: [-360, -355, -365, -360],
-            transition: {
-              duration: 60,
-              repeat: Infinity,
-              ease: "linear",
-              times: [0, 0.25, 0.75, 1]
-            }
-          }}
-          style={{ zIndex: 10 }}
-        >
+         <motion.div
+           className="absolute top-0 left-0 w-full h-full"
+           animate={{
+             rotate: 360,
+             transition: {
+               duration: 60,
+               repeat: Infinity,
+               ease: "linear"
+             }
+           }}
+           style={{ zIndex: 10 }}
+         >
         {containers.map((container, index) => {
           let color, glowColor, size;
           if (container.errors === 0) {

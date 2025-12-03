@@ -23,7 +23,7 @@ const ContainerHealth = () => {
   }, []);
 
   return (
-    <div className="space-y-4">
+    <div className="grid grid-cols-2 gap-4">
       {containers.map((container, index) => (
         <motion.div
           key={container.name}

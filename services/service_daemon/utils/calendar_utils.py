@@ -182,6 +182,13 @@ def sync_calendar():
 
         db = pymysql.connect(host=MYSQL_DATABASE, user=MYSQL_USER, passwd=MYSQL_PSWD, db=MYSQL_DB)
         cursor = db.cursor()
+
+        # Delete existing events in the sync range to avoid duplicates
+        cursor.execute(
+            "DELETE FROM calendar_events WHERE start_time >= %s AND start_time <= %s",
+            (now, future),
+        )
+
         for event in all_events:
             start_str = event["start"].get("dateTime", event["start"].get("date"))
             end_str = event["end"].get("dateTime", event["end"].get("date"))
@@ -200,15 +207,10 @@ def sync_calendar():
 
             cursor.execute(
                 "INSERT INTO calendar_events (title, start_time, end_time, address, notes) "
-                "VALUES (%s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE title=%s, end_time=%s, "
-                "address=%s, notes=%s",
+                "VALUES (%s, %s, %s, %s, %s)",
                 (
                     title,
                     start,
-                    end,
-                    location,
-                    description,
-                    title,
                     end,
                     location,
                     description,
