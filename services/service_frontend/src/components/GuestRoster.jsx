@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { User } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { getGravatarUrl } from '../utils/gravatarUtils';
+import { formatCreatedDate } from '../utils/timeUtils';
 
 const GuestRoster = () => {
   const [guests, setGuests] = useState([]);
@@ -40,10 +41,7 @@ const GuestRoster = () => {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const formatTime = (dateString) => {
-    if (!dateString) return 'UNKNOWN';
-    return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
+
 
   // Generate random barcode lines
   const generateBarcode = () => {
@@ -136,7 +134,7 @@ const GuestRoster = () => {
             {/* Info */}
             <div className="flex-1">
               <h3 className="font-tech text-xl uppercase text-white mb-1">{guest.name}</h3>
-              <p className="font-mono text-sm text-fui-text">{guest.email}</p>
+               <p className="font-mono text-sm text-fui-text truncate">{guest.email}</p>
             </div>
 
             {/* Barcode */}
@@ -154,16 +152,16 @@ const GuestRoster = () => {
                   />
                 ))}
               </div>
-              <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 origin-center rotate-[-90deg]">
-                <span className="font-mono text-xs text-fui-text">{formatTime(guest.last_online)}</span>
-              </div>
+                <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 origin-center rotate-[-90deg]">
+                  <span className="font-mono text-xs text-fui-text">{formatCreatedDate(guest.created_at)}</span>
+                </div>
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="bg-fui-accent text-black font-mono text-xs px-4 py-2 text-center">
-            LAST ONLINE: {formatDate(guest.last_online)}
-          </div>
+           {/* Footer */}
+            <div className="bg-fui-accent text-black font-mono text-xs px-4 py-2 text-center">
+              LAST ONLINE: {formatDate(guest.last_online)}
+            </div>
         </motion.div>
       ))}
     </div>
