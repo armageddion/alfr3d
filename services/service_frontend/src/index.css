@@ -449,5 +449,5 @@ body {
 }
 
 .grid-nexus {
-  grid-template-columns: 0.5fr 1.5fr 3fr 1.5fr 0.5fr;
+  grid-template-columns: 220px 300px 450px 300px 220px;
 }

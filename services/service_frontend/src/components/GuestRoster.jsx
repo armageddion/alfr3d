@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { User } from 'lucide-react';
 import { API_BASE_URL } from '../config';
 import { getGravatarUrl } from '../utils/gravatarUtils';
@@ -9,23 +9,31 @@ const GuestRoster = () => {
   const [guests, setGuests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
+  const hasLoadedInitially = useRef(false);
 
   useEffect(() => {
     const fetchGuests = async () => {
       try {
-        setIsLoading(true);
+        setIsLoading(!hasLoadedInitially.current);
         setError(false);
         const response = await fetch(`${API_BASE_URL}/api/users?online=true`);
         if (response.ok) {
           const data = await response.json();
           const onlineGuestUsers = data.filter(user => user.type === 'guest');
           setGuests(onlineGuestUsers);
+          if (!hasLoadedInitially.current) {
+            hasLoadedInitially.current = true;
+          }
         } else {
-          setError(true);
+          if (!hasLoadedInitially.current) {
+            setError(true);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch online guests:', error);
-        setError(true);
+        if (!hasLoadedInitially.current) {
+          setError(true);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -131,11 +139,11 @@ const GuestRoster = () => {
               )}
             </div>
 
-            {/* Info */}
-            <div className="flex-1">
-              <h3 className="font-tech text-xl uppercase text-white mb-1">{guest.name}</h3>
-               <p className="font-mono text-sm text-fui-text truncate">{guest.email}</p>
-            </div>
+             {/* Info */}
+             <div className="flex-1 min-w-0 overflow-hidden">
+               <h3 className="font-tech text-xl uppercase text-white mb-1">{guest.name}</h3>
+                <p className="font-mono text-sm text-fui-text" style={{ maskImage: 'linear-gradient(to right, black 80%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)' }}>{guest.email}</p>
+             </div>
 
             {/* Barcode */}
             <div className="flex-shrink-0 w-10 h-20 bg-black/20 flex flex-col items-center justify-center relative">

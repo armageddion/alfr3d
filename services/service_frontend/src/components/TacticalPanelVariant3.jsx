@@ -25,7 +25,7 @@ const TacticalPanelVariant3 = ({ title, children, className = "", showGrid = fal
           <div className="w-1 h-1 bg-fui-accent"></div>
         </div>
         {title && (
-          <h3 className="font-tech font-bold text-lg uppercase tracking-widest text-white text-right">
+           <h3 className="font-tech font-bold text-base uppercase tracking-widest text-white text-right">
             <span className="text-fui-accent mr-2">/</span>{title}
           </h3>
         )}
@@ -39,7 +39,7 @@ const TacticalPanelVariant3 = ({ title, children, className = "", showGrid = fal
         )}
 
         {/* Content */}
-        <div className="relative z-10 text-fui-text font-mono text-sm">
+         <div className="relative z-10 text-fui-text font-mono text-xs">
           {children}
         </div>
       </div>

@@ -139,11 +139,11 @@ const OnlineUsers = () => {
               )}
             </div>
 
-            {/* Info */}
-            <div className="flex-1">
-              <h3 className="font-tech text-xl uppercase text-white mb-1">{resident.name}</h3>
-               <p className="font-mono text-sm text-fui-text truncate">{resident.email}</p>
-            </div>
+             {/* Info */}
+             <div className="flex-1 min-w-0 overflow-hidden">
+               <h3 className="font-tech text-xl uppercase text-white mb-1">{resident.name}</h3>
+                <p className="font-mono text-sm text-fui-text" style={{ maskImage: 'linear-gradient(to right, black 80%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, black 80%, transparent 100%)' }}>{resident.email}</p>
+             </div>
 
             {/* Barcode */}
             <div className="flex-shrink-0 w-10 h-20 bg-black/20 flex flex-col items-center justify-center relative">

@@ -11,7 +11,7 @@ const TacticalPanelVariant1 = ({ title, children, className = "", showGrid = fal
 
       {/* Header Bar */}
       <div className="flex items-center justify-between px-3 py-1 bg-black/40 border-b border-fui-border">
-        <h3 className="font-tech font-bold text-lg uppercase tracking-widest text-white">
+         <h3 className="font-tech font-bold text-base uppercase tracking-widest text-white">
           <span className="text-fui-accent mr-2">/</span>{title}
         </h3>
         <div className="flex space-x-1">
@@ -28,7 +28,7 @@ const TacticalPanelVariant1 = ({ title, children, className = "", showGrid = fal
         )}
 
         {/* Content */}
-        <div className="relative z-10 text-fui-text font-mono text-sm">
+         <div className="relative z-10 text-fui-text font-mono text-xs">
           {children}
         </div>
       </div>
